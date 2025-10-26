@@ -4,16 +4,6 @@
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>공공기물 파손 신고 관리 대시보드</title>
-    
-    <!-- Leaflet CSS -->
-    <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/leaflet@1.9.3/dist/leaflet.css"/>
-    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/Leaflet.awesome-markers/2.0.2/leaflet.awesome-markers.css"/>
-    <link rel="stylesheet" href="https://cdn.jsdelivr.net/gh/python-visualization/folium/folium/templates/leaflet.awesome.rotate.min.css"/>
-    
-    <!-- Leaflet JS -->
-    <script src="https://cdn.jsdelivr.net/npm/leaflet@1.9.3/dist/leaflet.js"></script>
-    <script src="https://cdnjs.cloudflare.com/ajax/libs/Leaflet.awesome-markers/2.0.2/leaflet.awesome-markers.js"></script>
-    <script src="https://cdn.jsdelivr.net/gh/python-visualization/folium@main/folium/templates/leaflet_heat.min.js"></script>
     <style>
         * {
             margin: 0;
@@ -95,6 +85,9 @@
             padding: 15px 20px;
             border-bottom: 1px solid #e9ecef;
             font-weight: 600;
+            display: flex;
+            flex-direction: column;
+            gap: 15px;
         }
 
         .card-body {
@@ -209,48 +202,7 @@
             font-weight: 600;
         }
 
-        /* 지도 관련 스타일 */
-        .map-container {
-            height: 500px;
-            width: 100%;
-            border-radius: 10px;
-            overflow: hidden;
-            box-shadow: 0 2px 10px rgba(0,0,0,0.1);
-        }
-
-        .map-legend {
-            position: absolute;
-            bottom: 20px;
-            left: 20px;
-            width: 220px;
-            background-color: white;
-            border: 2px solid grey;
-            z-index: 1000;
-            font-size: 14px;
-            padding: 10px;
-            box-shadow: 0 0 15px rgba(0,0,0,0.2);
-            border-radius: 5px;
-        }
-
-        .map-legend h4 {
-            margin-top: 0;
-            text-align: center;
-        }
-
-        .map-legend p {
-            margin: 5px 0;
-        }
-
-        .map-legend hr {
-            margin: 10px 0;
-        }
-
-        .map-legend .legend-stats {
-            margin: 5px 0;
-            font-size: 12px;
-        }
-
-        /* 신고 상세보기 모달 스타일 */
+        /* Modal Styles */
         .modal {
             display: none;
             position: fixed;
@@ -265,82 +217,80 @@
         .modal-content {
             background-color: white;
             margin: 5% auto;
-            padding: 0;
+            padding: 20px;
             border-radius: 10px;
-            width: 90%;
+            width: 80%;
             max-width: 800px;
-            max-height: 90vh;
+            max-height: 80vh;
             overflow-y: auto;
             box-shadow: 0 4px 20px rgba(0,0,0,0.3);
         }
 
         .modal-header {
-            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
-            color: white;
-            padding: 20px;
-            border-radius: 10px 10px 0 0;
             display: flex;
             justify-content: space-between;
             align-items: center;
+            margin-bottom: 20px;
+            padding-bottom: 15px;
+            border-bottom: 2px solid #667eea;
         }
 
         .modal-header h2 {
+            color: #667eea;
             margin: 0;
-            font-size: 20px;
         }
 
         .close {
-            color: white;
+            color: #aaa;
             font-size: 28px;
             font-weight: bold;
             cursor: pointer;
-            background: none;
-            border: none;
         }
 
         .close:hover {
-            opacity: 0.7;
-        }
-
-        .modal-body {
-            padding: 20px;
+            color: #000;
         }
 
         .detail-section {
             margin-bottom: 20px;
-            padding: 15px;
-            background: #f8f9fa;
-            border-radius: 8px;
-            border-left: 4px solid #667eea;
         }
 
         .detail-section h3 {
-            margin: 0 0 10px 0;
             color: #667eea;
+            margin-bottom: 10px;
             font-size: 16px;
         }
 
         .detail-row {
             display: flex;
-            margin-bottom: 8px;
+            margin-bottom: 10px;
+            padding: 10px;
+            background: #f8f9fa;
+            border-radius: 5px;
         }
 
         .detail-label {
-            font-weight: bold;
+            font-weight: 600;
             width: 120px;
             color: #666;
         }
 
         .detail-value {
             flex: 1;
-            color: #333;
+        }
+
+        .detail-image {
+            max-width: 100%;
+            max-height: 400px;
+            border-radius: 8px;
+            margin-top: 10px;
+            object-fit: contain;
         }
 
         .action-buttons {
             display: flex;
             gap: 10px;
             margin-top: 20px;
-            justify-content: center;
         }
 
         .btn {
@@ -349,8 +299,6 @@
             border-radius: 5px;
             cursor: pointer;
             font-size: 14px;
-            font-weight: 600;
-            transition: all 0.3s ease;
         }
 
         .btn-primary {
@@ -360,24 +308,6 @@
 
         .btn-primary:hover {
             background: #5a6fd8;
-        }
-
-        .btn-success {
-            background: #28a745;
-            color: white;
-        }
-
-        .btn-success:hover {
-            background: #218838;
-        }
-
-        .btn-warning {
-            background: #ffc107;
-            color: #212529;
-        }
-
-        .btn-warning:hover {
-            background: #e0a800;
         }
 
         .btn-danger {
@@ -398,20 +328,142 @@
             background: #5a6268;
         }
 
-        .image-preview {
-            max-width: 100%;
-            max-height: 300px;
-            border-radius: 8px;
-            box-shadow: 0 2px 10px rgba(0,0,0,0.1);
+        /* Tab Styles */
+        .tab-container {
+            display: flex;
+            gap: 10px;
+            margin-bottom: 15px;
+            border-bottom: 2px solid #e9ecef;
         }
 
-        .no-image {
-            padding: 40px;
-            text-align: center;
+        .tab-button {
+            padding: 10px 20px;
+            background: none;
+            border: none;
+            cursor: pointer;
+            font-size: 14px;
+            font-weight: 600;
             color: #666;
+            border-bottom: 3px solid transparent;
+            transition: all 0.3s;
+        }
+
+        .tab-button:hover {
+            color: #667eea;
+        }
+
+        .tab-button.active {
+            color: #667eea;
+            border-bottom-color: #667eea;
+        }
+
+        /* Pagination Styles */
+        .pagination {
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            gap: 10px;
+            margin-top: 20px;
+            padding: 15px;
             background: #f8f9fa;
             border-radius: 8px;
-            border: 2px dashed #dee2e6;
+        }
+
+        .pagination button {
+            padding: 8px 15px;
+            border: 1px solid #ddd;
+            background: white;
+            border-radius: 5px;
+            cursor: pointer;
+            font-size: 14px;
+            transition: all 0.3s;
+        }
+
+        .pagination button:hover:not(:disabled) {
+            background: #667eea;
+            color: white;
+            border-color: #667eea;
+        }
+
+        .pagination button:disabled {
+            opacity: 0.5;
+            cursor: not-allowed;
+        }
+
+        .pagination button.active {
+            background: #667eea;
+            color: white;
+            border-color: #667eea;
+        }
+
+        .pagination-info {
+            font-size: 14px;
+            color: #666;
+            padding: 0 10px;
+        }
+
+        /* Filter Styles */
+        .filter-section {
+            background: white;
+            padding: 20px;
+            border-radius: 10px;
+            box-shadow: 0 2px 10px rgba(0,0,0,0.1);
+            margin-bottom: 20px;
+            display: flex;
+            gap: 15px;
+            flex-wrap: wrap;
+            align-items: center;
+        }
+
+        .filter-group {
+            display: flex;
+            gap: 10px;
+            align-items: center;
+        }
+
+        .filter-group label {
+            font-size: 13px;
+            font-weight: 600;
+            color: #666;
+        }
+
+        .filter-select {
+            padding: 8px 12px;
+            border: 1px solid #e9ecef;
+            border-radius: 8px;
+            font-size: 13px;
+            cursor: pointer;
+            outline: none;
+            transition: all 0.3s;
+        }
+
+        .filter-select:focus {
+            border-color: #667eea;
+            box-shadow: 0 0 0 3px rgba(102, 126, 234, 0.1);
+        }
+
+        .filter-btn {
+            padding: 8px 16px;
+            background: #667eea;
+            color: white;
+            border: none;
+            border-radius: 8px;
+            font-size: 13px;
+            cursor: pointer;
+            font-weight: 600;
+        }
+
+        .filter-btn:hover {
+            background: #5a6fd8;
+        }
+
+        .filter-btn.secondary {
+            background: #f8f9fa;
+            color: #666;
+        }
+
+        .filter-btn.secondary:hover {
+            background: #e9ecef;
         }
 
         @media (max-width: 768px) {
@@ -422,15 +474,10 @@
             .stats-grid {
                 grid-template-columns: repeat(auto-fit, minmax(200px, 1fr));
             }
-            
-            .map-container {
-                height: 400px;
-            }
-            
-            .map-legend {
-                width: 180px;
-                font-size: 12px;
-                padding: 8px;
+
+            .modal-content {
+                width: 95%;
+                margin: 10% auto;
             }
         }
     </style>
@@ -463,9 +510,45 @@
             </div>
         </div>
 
+        <div class="filter-section">
+            <div class="filter-group">
+                <label>📊 필터:</label>
+                <select class="filter-select" id="urgencyFilter" onchange="applyFilter()">
+                    <option value="">모든 긴급도</option>
+                    <option value="5">긴급 (5)</option>
+                    <option value="4">매우높음 (4)</option>
+                    <option value="3">높음 (3)</option>
+                    <option value="2">보통 (2)</option>
+                    <option value="1">낮음 (1)</option>
+                </select>
+                <select class="filter-select" id="damageTypeFilter" onchange="applyFilter()">
+                    <option value="">모든 유형</option>
+                    <option value="가로등">가로등</option>
+                    <option value="도로파손">도로파손</option>
+                    <option value="안전펜스">안전펜스</option>
+                    <option value="불법주정차">불법주정차</option>
+                    <option value="기타">기타</option>
+                </select>
+                <select class="filter-select" id="statusFilter" onchange="applyFilter()">
+                    <option value="">모든 상태</option>
+                    <option value="접수">접수완료</option>
+                    <option value="검토중">검토중</option>
+                    <option value="처리중">처리중</option>
+                    <option value="완료">처리완료</option>
+                </select>
+                <button class="filter-btn secondary" onclick="clearFilters()">초기화</button>
+            </div>
+        </div>
+
         <div class="dashboard-grid">
             <div class="card">
-                <div class="card-header">📋 최근 신고 현황</div>
+                <div class="card-header">
+                    <div>📋 신고 현황</div>
+                    <div class="tab-container">
+                        <button class="tab-button active" onclick="switchTab('recent')" id="recentTab">최근 신고</button>
+                        <button class="tab-button" onclick="switchTab('all')" id="allTab">전체 신고</button>
+                    </div>
+                </div>
                 <div class="card-body">
                     <div id="reportsTable">
                         <div class="loading">데이터를 불러오는 중...</div>
@@ -484,6 +567,13 @@
         </div>
 
         <div class="card" style="margin-top: 20px;">
+            <div class="card-header">🗺️ 실시간 신고 위치 및 군집 지도</div>
+            <div class="card-body" id="mapContainer" style="height: 500px;">
+                <div class="loading">지도를 불러오는 중...</div>
+            </div>
+        </div>
+
+        <div class="card" style="margin-top: 20px;">
             <div class="card-header">🔍 군집 신고 현황</div>
             <div class="card-body">
                 <div id="clusterInfo">
@@ -491,40 +581,17 @@
                 </div>
             </div>
         </div>
-
-        <!-- 위험도 지도 섹션 -->
-        <div class="card" style="margin-top: 20px;">
-            <div class="card-header">🗺️ 파주시 위험도 지도</div>
-            <div class="card-body" style="position: relative;">
-                <div id="riskMap" class="map-container"></div>
-                <div class="map-legend">
-                    <h4>📊 위험도 범례</h4>
-                    <p><span style="color:#DC143C;">⬤</span> Level 5 - 긴급</p>
-                    <p><span style="color:#FF6347;">⬤</span> Level 4 - 경고</p>
-                    <p><span style="color:#FFA500;">⬤</span> Level 3 - 주의</p>
-                    <p><span style="color:#FFFF99;">⬤</span> Level 2 - 보통</p>
-                    <p><span style="color:#90EE90;">⬤</span> Level 1 - 낮음</p>
-                    <p><span style="color:#808080;">⬤</span> 단독 신고</p>
-                    <hr>
-                    <div class="legend-stats">
-                        <b>총 신고:</b> <span id="mapTotalReports">-</span>건<br>
-                        <b>군집:</b> <span id="mapClusterCount">-</span>개<br>
-                        <b>단독:</b> <span id="mapIndividualCount">-</span>건
-                    </div>
-                </div>
-            </div>
-        </div>
     </div>
 
-    <!-- 신고 상세보기 모달 -->
+    <!-- Modal for Report Details -->
     <div id="reportModal" class="modal">
         <div class="modal-content">
             <div class="modal-header">
-                <h2>📋 신고 상세 정보</h2>
-                <button class="close" onclick="closeReportModal()">&times;</button>
+                <h2>신고 상세 정보</h2>
+                <span class="close" onclick="closeReportModal()">&times;</span>
             </div>
-            <div class="modal-body" id="reportModalBody">
-                <div class="loading">신고 정보를 불러오는 중...</div>
+            <div id="modalBody">
+                <!-- Dynamic content will be inserted here -->
             </div>
         </div>
     </div>
@@ -533,13 +600,23 @@
         class Dashboard {
             constructor() {
                 this.refreshInterval = null;
-                this.map = null;
+                this.currentTab = 'recent'; // 'recent' or 'all'
+                this.currentPage = 1; // 현재 페이지
+                this.totalPages = 1; // 전체 페이지 수
+                this.currentClusterPage = 1; // 군집 현재 페이지
+                this.totalClusterPages = 1; // 군집 전체 페이지 수
+                this.allClusters = []; // 모든 군집 데이터
+                // 필터 설정
+                this.filters = {
+                    urgency: '', // 긴급도 필터
+                    damageType: '', // 손상 유형 필터
+                    status: '' // 상태 필터
+                };
                 this.init();
             }
 
             init() {
                 this.loadDashboard();
-                this.initMap();
                 // 30초마다 자동 새로고침
                 this.refreshInterval = setInterval(() => {
                     this.loadDashboard();
@@ -552,7 +629,7 @@
                         this.loadStatistics(),
                         this.loadRecentReports(),
                         this.loadClusterInfo(),
-                        this.loadMapData()
+                        this.loadMap()
                     ]);
                 } catch (error) {
                     console.error('대시보드 로드 오류:', error);
@@ -580,24 +657,105 @@
 
             async loadRecentReports() {
                 try {
-                    const response = await fetch('/api/reports');
-                    const reports = await response.json();
+                    const tableContainer = document.getElementById('reportsTable');
+                    tableContainer.innerHTML = '<div class="loading">데이터를 불러오는 중...</div>';
                     
-                    this.createReportsTable(reports);
+                    // 모든 신고 데이터 가져오기
+                    let url = '/api/reports';
+                    
+                    // 최근 신고: 10개만, 전체 신고: 100개
+                    const limit = this.currentTab === 'all' ? 100 : 10;
+                    
+                    url += `?limit=${limit}&offset=0`;
+                    
+                    const response = await fetch(url);
+                    const data = await response.json();
+                    
+                    // 새로운 API 응답 형식 처리
+                    let allReports = data.reports || data;
+                    
+                    // 필터 적용
+                    allReports = this.applyFilters(allReports);
+                    
+                    // 페이지네이션 처리 (전체 신고 탭일 때만)
+                    let reports = allReports;
+                    if (this.currentTab === 'all') {
+                        const startIndex = (this.currentPage - 1) * 10;
+                        const endIndex = startIndex + 10;
+                        reports = allReports.slice(startIndex, endIndex);
+                        this.totalPages = Math.ceil(allReports.length / 10);
+                    } else {
+                        reports = allReports.slice(0, 10);
+                    }
+                    
+                    // 페이지네이션 데이터 저장
+                    this.paginationData = {
+                        total: allReports.length,
+                        page: this.currentPage,
+                        total_pages: this.totalPages
+                    };
+                    
+                    this.createReportsTable(reports, this.paginationData);
                 } catch (error) {
                     console.error('신고 목록 로드 오류:', error);
                 }
             }
 
+            applyFilters(reports) {
+                let filtered = reports;
+                
+                // 긴급도 필터
+                if (this.filters.urgency) {
+                    filtered = filtered.filter(r => r.urgency_level == this.filters.urgency);
+                }
+                
+                // 손상 유형 필터
+                if (this.filters.damageType) {
+                    filtered = filtered.filter(r => r.damage_type === this.filters.damageType);
+                }
+                
+                // 상태 필터
+                if (this.filters.status) {
+                    filtered = filtered.filter(r => r.status === this.filters.status);
+                }
+                
+                return filtered;
+            }
+
             async loadClusterInfo() {
                 try {
+                    console.log('군집 정보 로딩 시작...');
                     const response = await fetch('/api/clusters');
+                    
+                    if (!response.ok) {
+                        throw new Error(`HTTP ${response.status}: ${response.statusText}`);
+                    }
+                    
                     const clusterData = await response.json();
+                    console.log('군집 데이터 수신:', clusterData);
                     
                     document.getElementById('clusterReports').textContent = clusterData.cluster_count || 0;
-                    this.createClusterInfo(clusterData.clusters);
+                    
+                    // 전체 군집 데이터 저장
+                    this.allClusters = clusterData.clusters || [];
+                    this.totalClusterPages = Math.ceil(this.allClusters.length / 10);
+                    
+                    this.createClusterInfo();
                 } catch (error) {
                     console.error('군집 정보 로드 오류:', error);
+                    document.getElementById('clusterInfo').innerHTML = `<div class="loading">군집 정보 로드 실패: ${error.message}</div>`;
+                }
+            }
+
+            async loadMap() {
+                try {
+                    const response = await fetch('/api/map');
+                    const mapHtml = await response.text();
+                    const mapContainer = document.getElementById('mapContainer');
+                    mapContainer.innerHTML = `<iframe srcdoc="${mapHtml.replace(/"/g, '&quot;')}" style="width: 100%; height: 100%; border: none;"></iframe>`;
+                } catch (error) {
+                    console.error('지도 로드 오류:', error);
+                    document.getElementById('mapContainer').innerHTML = '<div class="loading">지도 로드에 실패했습니다.</div>';
                 }
             }
 
@@ -613,10 +771,10 @@
                 for (let i = 1; i <= 5; i++) {
                     const count = stats.urgency_distribution[i] || 0;
                     const percentage = stats.total_reports > 0 ? (count / stats.total_reports * 100).toFixed(1) : 0;
-                    chartHtml += '<div style="margin: 8px 0; display: flex; justify-content: space-between;">';
-                    chartHtml += '<span>' + urgencyLabels[i-1] + '</span>';
-                    chartHtml += '<span><span class="urgency-badge urgency-' + i + '">' + count + '</span> (' + percentage + '%)</span>';
-                    chartHtml += '</div>';
+                    chartHtml += `<div style="margin: 8px 0; display: flex; justify-content: space-between;">`;
+                    chartHtml += `<span>${urgencyLabels[i-1]}</span>`;
+                    chartHtml += `<span><span class="urgency-badge urgency-${i}">${count}</span> (${percentage}%)</span>`;
+                    chartHtml += `</div>`;
                 }
                 chartHtml += '</div>';
                 
@@ -625,10 +783,10 @@
                 chartHtml += '<h4 style="margin-bottom: 15px; color: #667eea;">손상 유형별 분포</h4>';
                 for (const [damageType, count] of Object.entries(stats.damage_type_distribution)) {
                     const percentage = stats.total_reports > 0 ? (count / stats.total_reports * 100).toFixed(1) : 0;
-                    chartHtml += '<div style="margin: 8px 0; display: flex; justify-content: space-between;">';
-                    chartHtml += '<span>' + damageType + '</span>';
-                    chartHtml += '<span>' + count + ' (' + percentage + '%)</span>';
-                    chartHtml += '</div>';
+                    chartHtml += `<div style="margin: 8px 0; display: flex; justify-content: space-between;">`;
+                    chartHtml += `<span>${damageType}</span>`;
+                    chartHtml += `<span>${count} (${percentage}%)</span>`;
+                    chartHtml += `</div>`;
                 }
                 chartHtml += '</div>';
                 
@@ -636,7 +794,7 @@
                 chartContainer.innerHTML = chartHtml;
             }
 
-            createReportsTable(reports) {
+            createReportsTable(reports, paginationData = null) {
                 const tableContainer = document.getElementById('reportsTable');
                 
                 if (!reports || reports.length === 0) {
@@ -649,9 +807,9 @@
                 tableHtml += '<th>신고번호</th><th>손상유형</th><th>긴급도</th><th>상태</th><th>신고시간</th><th>관리</th>';
                 tableHtml += '</tr></thead><tbody>';
                 
-                reports.slice(0, 10).forEach(report => {
+                reports.forEach(report => {
                     const urgencyText = ['낮음', '보통', '높음', '매우높음', '긴급'][report.urgency_level - 1];
-                    const statusText = {
+                    const statusDisplay = {
                         '접수': '접수완료',
                         '검토중': '검토중',
                         '처리중': '처리중',
@@ -659,240 +817,148 @@
                     }[report.status] || report.status;
                     
                     tableHtml += '<tr>';
-                    tableHtml += '<td>#' + report.id + '</td>';
-                    tableHtml += '<td>' + report.damage_type + '</td>';
-                    tableHtml += '<td><span class="urgency-badge urgency-' + report.urgency_level + '">' + urgencyText + '</span></td>';
-                    tableHtml += '<td><span class="status-badge status-' + report.status.toLowerCase() + '">' + statusText + '</span></td>';
-                    tableHtml += '<td>' + new Date(report.created_at).toLocaleString() + '</td>';
-                    tableHtml += '<td><button class="btn btn-primary" onclick="showReportDetail(' + report.id + ')" style="padding: 5px 10px; font-size: 12px;">상세보기</button></td>';
+                    tableHtml += `<td>#${report.id}</td>`;
+                    tableHtml += `<td>${report.damage_type}</td>`;
+                    tableHtml += `<td><span class="urgency-badge urgency-${report.urgency_level}">${urgencyText}</span></td>`;
+                    tableHtml += `<td><span class="status-badge status-${report.status.toLowerCase()}">${statusDisplay}</span></td>`;
+                    tableHtml += `<td>${new Date(report.created_at).toLocaleString()}</td>`;
+                    tableHtml += `<td><button class="btn btn-primary" onclick="showReportDetail(${report.id})">상세보기</button></td>`;
                     tableHtml += '</tr>';
                 });
                 
                 tableHtml += '</tbody></table>';
+                
+                // 페이지네이션 추가 (전체 신고 탭일 때만)
+                if (this.currentTab === 'all' && paginationData && this.totalPages > 1) {
+                    tableHtml += this.createPagination();
+                }
+                
                 tableContainer.innerHTML = tableHtml;
             }
 
-            createClusterInfo(clusters) {
+            createPagination() {
+                const paginationData = this.paginationData || {};
+                let html = '<div class="pagination">';
+                
+                // 이전 페이지 버튼
+                html += `<button onclick="window.dashboard.goToPage(${this.currentPage - 1})" ${this.currentPage === 1 ? 'disabled' : ''}>이전</button>`;
+                
+                // 페이지 번호 버튼들
+                const startPage = Math.max(1, this.currentPage - 2);
+                const endPage = Math.min(this.totalPages, this.currentPage + 2);
+                
+                if (startPage > 1) {
+                    html += `<button onclick="window.dashboard.goToPage(1)">1</button>`;
+                    if (startPage > 2) html += '<span>...</span>';
+                }
+                
+                for (let i = startPage; i <= endPage; i++) {
+                    html += `<button class="${i === this.currentPage ? 'active' : ''}" onclick="window.dashboard.goToPage(${i})">${i}</button>`;
+                }
+                
+                if (endPage < this.totalPages) {
+                    if (endPage < this.totalPages - 1) html += '<span>...</span>';
+                    html += `<button onclick="window.dashboard.goToPage(${this.totalPages})">${this.totalPages}</button>`;
+                }
+                
+                // 다음 페이지 버튼
+                html += `<button onclick="window.dashboard.goToPage(${this.currentPage + 1})" ${this.currentPage === this.totalPages ? 'disabled' : ''}>다음</button>`;
+                
+                // 페이지 정보
+                if (paginationData.total) {
+                    html += `<div class="pagination-info">전체 ${paginationData.total}개 중 ${((this.currentPage - 1) * 10) + 1}-${Math.min(this.currentPage * 10, paginationData.total)}개</div>`;
+                }
+                
+                html += '</div>';
+                return html;
+            }
+
+            goToPage(page) {
+                if (page < 1 || page > this.totalPages) return;
+                this.currentPage = page;
+                this.loadRecentReports();
+            }
+
+            createClusterInfo() {
                 const clusterContainer = document.getElementById('clusterInfo');
                 
-                if (!clusters || clusters.length === 0) {
+                if (!this.allClusters || this.allClusters.length === 0) {
                     clusterContainer.innerHTML = '<div class="loading">군집 신고가 없습니다.</div>';
                     return;
                 }
                 
+                // 현재 페이지에 해당하는 군집만 표시 (페이지당 10개)
+                const startIndex = (this.currentClusterPage - 1) * 10;
+                const endIndex = startIndex + 10;
+                const currentClusters = this.allClusters.slice(startIndex, endIndex);
+                
                 let clusterHtml = '';
-                clusters.forEach(cluster => {
+                currentClusters.forEach(cluster => {
                     clusterHtml += '<div class="cluster-info">';
-                    clusterHtml += '<h4>군집 ' + cluster.cluster_id + ' (' + cluster.report_count + '건)</h4>';
-                    clusterHtml += '<p><strong>위치:</strong> 위도 ' + cluster.center_latitude.toFixed(6) + ', 경도 ' + cluster.center_longitude.toFixed(6) + '</p>';
-                    clusterHtml += '<p><strong>최고 긴급도:</strong> <span class="urgency-badge urgency-' + cluster.max_urgency + '">' + ['낮음', '보통', '높음', '매우높음', '긴급'][cluster.max_urgency - 1] + '</span></p>';
+                    clusterHtml += `<h4>군집 ${cluster.cluster_id} (${cluster.report_count}건)</h4>`;
+                    // 주소가 있으면 주소 표시, 없으면 위도/경도 표시
+                    const location = cluster.address || `위도 ${cluster.center_lat.toFixed(6)}, 경도 ${cluster.center_lon.toFixed(6)}`;
+                    clusterHtml += `<p><strong>위치:</strong> ${location}</p>`;
+                    clusterHtml += `<p><strong>평균 긴급도:</strong> ${cluster.avg_emergency}</p>`;
+                    clusterHtml += `<p><strong>최고 긴급도:</strong> <span class="urgency-badge urgency-${cluster.max_emergency}">${['낮음', '보통', '높음', '매우높음', '긴급'][cluster.max_emergency - 1]}</span></p>`;
+                    clusterHtml += `<p><strong>위험도 점수:</strong> ${cluster.risk_score} (${cluster.risk_label})</p>`;
                     
-                    if (cluster.max_urgency >= 4) {
+                    if (cluster.max_emergency >= 4) {
                         clusterHtml += '<div class="emergency-alert">⚠️ 긴급 처리가 필요한 군집입니다!</div>';
                     }
                     
                     clusterHtml += '</div>';
                 });
                 
+                // 페이지네이션 추가
+                if (this.totalClusterPages > 1) {
+                    clusterHtml += this.createClusterPagination();
+                }
+                
                 clusterContainer.innerHTML = clusterHtml;
             }
 
-            initMap() {
-                // 파주시 중심 좌표
-                this.map = L.map('riskMap', {
-                    center: [37.7598688, 126.7801781],
-                    zoom: 13,
-                    zoomControl: true
-                });
-
-                // OpenStreetMap 타일 레이어 추가
-                L.tileLayer('https://tile.openstreetmap.org/{z}/{x}/{y}.png', {
-                    attribution: '&copy; <a href="https://www.openstreetmap.org/copyright">OpenStreetMap</a> contributors',
-                    maxZoom: 19
-                }).addTo(this.map);
-            }
-
-            async loadMapData() {
-                try {
-                    const response = await fetch('/api/reports');
-                    const reports = await response.json();
-                    
-                    if (this.map) {
-                        this.updateMap(reports);
-                    }
-                } catch (error) {
-                    console.error('지도 데이터 로드 오류:', error);
+            createClusterPagination() {
+                const startIndex = (this.currentClusterPage - 1) * 10;
+                const endIndex = startIndex + 10;
+                
+                let html = '<div class="pagination" style="margin-top: 20px;">';
+                
+                // 이전 페이지 버튼
+                html += `<button onclick="window.dashboard.goToClusterPage(${this.currentClusterPage - 1})" ${this.currentClusterPage === 1 ? 'disabled' : ''}>이전</button>`;
+                
+                // 페이지 번호 버튼들
+                const startPage = Math.max(1, this.currentClusterPage - 2);
+                const endPage = Math.min(this.totalClusterPages, this.currentClusterPage + 2);
+                
+                if (startPage > 1) {
+                    html += `<button onclick="window.dashboard.goToClusterPage(1)">1</button>`;
+                    if (startPage > 2) html += '<span>...</span>';
                 }
-            }
-
-            updateMap(reports) {
-                // 기존 마커와 레이어 제거
-                this.map.eachLayer(layer => {
-                    if (layer !== this.map._layers[Object.keys(this.map._layers)[0]]) {
-                        this.map.removeLayer(layer);
-                    }
-                });
-
-                if (!reports || reports.length === 0) return;
-
-                let clusterData = {};
-                let individualCount = 0;
-                let clusterCount = 0;
-
-                // 신고 데이터 처리
-                reports.forEach(report => {
-                    const lat = report.latitude;
-                    const lon = report.longitude;
-                    const urgency = report.urgency_level;
-                    const clusterId = report.cluster_id;
-
-                    if (clusterId && clusterId !== '단독') {
-                        if (!clusterData[clusterId]) {
-                            clusterData[clusterId] = {
-                                reports: [],
-                                centerLat: 0,
-                                centerLon: 0,
-                                maxUrgency: 0
-                            };
-                        }
-                        clusterData[clusterId].reports.push(report);
-                        clusterData[clusterId].centerLat += lat;
-                        clusterData[clusterId].centerLon += lon;
-                        clusterData[clusterId].maxUrgency = Math.max(clusterData[clusterId].maxUrgency, urgency);
-                    } else {
-                        individualCount++;
-                        this.addIndividualMarker(lat, lon, report);
-                    }
-                });
-
-                // 군집 처리
-                Object.keys(clusterData).forEach(clusterId => {
-                    const cluster = clusterData[clusterId];
-                    cluster.centerLat /= cluster.reports.length;
-                    cluster.centerLon /= cluster.reports.length;
-                    
-                    clusterCount++;
-                    this.addClusterMarker(cluster.centerLat, cluster.centerLon, cluster, clusterId);
-                    
-                    // 군집 내 개별 신고 마커 추가
-                    cluster.reports.forEach(report => {
-                        this.addIndividualMarker(report.latitude, report.longitude, report, true);
-                    });
-                });
-
-                // 히트맵 데이터 생성
-                const heatData = reports.map(report => [
-                    report.latitude, 
-                    report.longitude, 
-                    report.urgency_level
-                ]);
-
-                // 히트맵 레이어 추가
-                if (heatData.length > 0) {
-                    L.heatLayer(heatData, {
-                        minOpacity: 0.3,
-                        maxZoom: 18,
-                        radius: 25,
-                        blur: 20,
-                        gradient: {
-                            0.4: "blue",
-                            0.6: "yellow", 
-                            0.8: "orange",
-                            1.0: "red"
-                        },
-                        maxOpacity: 0.8
-                    }).addTo(this.map);
+                
+                for (let i = startPage; i <= endPage; i++) {
+                    html += `<button class="${i === this.currentClusterPage ? 'active' : ''}" onclick="window.dashboard.goToClusterPage(${i})">${i}</button>`;
                 }
-
-                // 범례 업데이트
-                document.getElementById('mapTotalReports').textContent = reports.length;
-                document.getElementById('mapClusterCount').textContent = clusterCount;
-                document.getElementById('mapIndividualCount').textContent = individualCount;
-            }
-
-            addIndividualMarker(lat, lon, report, isInCluster = false) {
-                const urgency = report.urgency_level;
-                let markerColor, iconType;
-
-                if (isInCluster) {
-                    // 군집 내 신고는 작은 원형 마커
-                    markerColor = urgency >= 4 ? 'red' : urgency >= 3 ? 'orange' : 'blue';
-                    iconType = 'record';
-                } else {
-                    // 단독 신고는 다른 아이콘
-                    markerColor = urgency >= 4 ? 'red' : urgency >= 3 ? 'orange' : 'blue';
-                    iconType = urgency >= 4 ? 'fire' : urgency >= 3 ? 'exclamation-sign' : 'warning-sign';
+                
+                if (endPage < this.totalClusterPages) {
+                    if (endPage < this.totalClusterPages - 1) html += '<span>...</span>';
+                    html += `<button onclick="window.dashboard.goToClusterPage(${this.totalClusterPages})">${this.totalClusterPages}</button>`;
                 }
-
-                const icon = L.AwesomeMarkers.icon({
-                    markerColor: markerColor,
-                    iconColor: 'white',
-                    icon: iconType,
-                    prefix: 'glyphicon',
-                    extraClasses: 'fa-rotate-0'
-                });
-
-                const marker = L.marker([lat, lon], { icon: icon }).addTo(this.map);
-
-                const popupContent = '<div style="font-family: Arial; width: 200px;">' +
-                    '<h4 style="margin: 0; color: ' + (urgency >= 4 ? '#FF6347' : urgency >= 3 ? '#FFA500' : '#808080') + ';">' +
-                    '🚨 신고 ID: ' + report.id +
-                    '</h4>' +
-                    '<hr style="margin: 5px 0;">' +
-                    '<b>위험도:</b> ' + (isInCluster ? 'Level ' + urgency : '단독 (긴급도 ' + urgency + ')') + '<br>' +
-                    '<b>위험도 점수:</b> ' + (report.risk_score || urgency) + '<br>' +
-                    '<b>긴급도:</b> ' + urgency + '<br>' +
-                    '<b>군집 ID:</b> ' + (report.cluster_id || '단독') + '<br>' +
-                    '<b>시간:</b> ' + new Date(report.created_at).toLocaleString() + '<br>' +
-                    '<b>위치:</b> (' + lat.toFixed(5) + ', ' + lon.toFixed(5) + ')' +
-                    '</div>';
-
-                marker.bindPopup(popupContent);
-                marker.bindTooltip('신고 ' + report.id + ' - ' + (isInCluster ? 'Level ' + urgency : '단독 (긴급도 ' + urgency + ')'));
+                
+                // 다음 페이지 버튼
+                html += `<button onclick="window.dashboard.goToClusterPage(${this.currentClusterPage + 1})" ${this.currentClusterPage === this.totalClusterPages ? 'disabled' : ''}>다음</button>`;
+                
+                // 페이지 정보
+                html += `<div class="pagination-info">전체 ${this.allClusters.length}개 중 ${startIndex + 1}-${Math.min(endIndex, this.allClusters.length)}개</div>`;
+                
+                html += '</div>';
+                return html;
             }
 
-            addClusterMarker(lat, lon, cluster, clusterId) {
-                const urgency = cluster.maxUrgency;
-                let color;
-
-                if (urgency >= 4) color = '#FF6347';
-                else if (urgency >= 3) color = '#FFA500';
-                else color = '#FFFF99';
-
-                // 군집 원형 영역
-                const circle = L.circle([lat, lon], {
-                    color: color,
-                    fillColor: color,
-                    fillOpacity: 0.3,
-                    radius: 500,
-                    weight: 3
-                }).addTo(this.map);
-
-                circle.bindPopup('군집 ' + clusterId + '<br>위험도: Level ' + urgency + '<br>신고: ' + cluster.reports.length + '건');
-                circle.bindTooltip('군집 ' + clusterId + ' - ' + cluster.reports.length + '건');
-
-                // 군집 중심 마커
-                const clusterIcon = L.divIcon({
-                    html: '<div style="' +
-                        'font-size: 16px; ' +
-                        'font-weight: bold; ' +
-                        'color: white; ' +
-                        'background-color: ' + color + '; ' +
-                        'border: 3px solid white;' +
-                        'border-radius: 50%; ' +
-                        'width: 40px; ' +
-                        'height: 40px; ' +
-                        'display: flex; ' +
-                        'align-items: center; ' +
-                        'justify-content: center;' +
-                        'box-shadow: 0 0 10px rgba(0,0,0,0.5);' +
-                        '">' +
-                        cluster.reports.length +
-                        '</div>',
-                    className: 'empty'
-                });
-
-                L.marker([lat, lon], { icon: clusterIcon }).addTo(this.map);
+            goToClusterPage(page) {
+                if (page < 1 || page > this.totalClusterPages) return;
+                this.currentClusterPage = page;
+                this.createClusterInfo();
             }
         }
 
@@ -902,190 +968,195 @@
             }
         }
 
-        // 신고 상세보기 모달 관련 함수들
+        function switchTab(tab) {
+            if (!window.dashboard) return;
+            
+            // 탭 상태 업데이트
+            window.dashboard.currentTab = tab;
+            
+            // 페이지 리셋
+            window.dashboard.currentPage = 1;
+            
+            // 탭 버튼 스타일 업데이트
+            document.getElementById('recentTab').classList.toggle('active', tab === 'recent');
+            document.getElementById('allTab').classList.toggle('active', tab === 'all');
+            
+            // 데이터 다시 로드
+            window.dashboard.loadRecentReports();
+        }
+
+        function applyFilter() {
+            if (!window.dashboard) return;
+            
+            // 필터 값 가져오기
+            const urgency = document.getElementById('urgencyFilter').value;
+            const damageType = document.getElementById('damageTypeFilter').value;
+            const status = document.getElementById('statusFilter').value;
+            
+            // 필터 저장
+            window.dashboard.filters.urgency = urgency;
+            window.dashboard.filters.damageType = damageType;
+            window.dashboard.filters.status = status;
+            
+            // 페이지 리셋
+            window.dashboard.currentPage = 1;
+            
+            // 데이터 다시 로드
+            window.dashboard.loadRecentReports();
+        }
+
+        function clearFilters() {
+            if (!window.dashboard) return;
+            
+            // 필터 초기화
+            document.getElementById('urgencyFilter').value = '';
+            document.getElementById('damageTypeFilter').value = '';
+            document.getElementById('statusFilter').value = '';
+            
+            window.dashboard.filters.urgency = '';
+            window.dashboard.filters.damageType = '';
+            window.dashboard.filters.status = '';
+            
+            // 페이지 리셋
+            window.dashboard.currentPage = 1;
+            
+            // 데이터 다시 로드
+            window.dashboard.loadRecentReports();
+        }
+
         async function showReportDetail(reportId) {
             const modal = document.getElementById('reportModal');
-            const modalBody = document.getElementById('reportModalBody');
+            const modalBody = document.getElementById('modalBody');
             
-            modal.style.display = 'block';
+            // 로딩 상태 표시
             modalBody.innerHTML = '<div class="loading">신고 정보를 불러오는 중...</div>';
+            modal.style.display = 'block';
             
             try {
-                const response = await fetch('/api/report/' + reportId + '/detail');
+                const response = await fetch(`/api/report/${reportId}/detail`);
                 const report = await response.json();
                 
+                // 상세 정보 표시
                 displayReportDetail(report);
             } catch (error) {
-                console.error('신고 상세 정보 로드 오류:', error);
-                modalBody.innerHTML = '<div class="loading">신고 정보를 불러오는데 실패했습니다.</div>';
+                console.error('상세 정보 로드 오류:', error);
+                modalBody.innerHTML = '<div class="loading">신고 정보를 불러올 수 없습니다.</div>';
             }
         }
 
         function displayReportDetail(report) {
-            const modalBody = document.getElementById('reportModalBody');
-            
-            const urgencyText = ['낮음', '보통', '높음', '매우높음', '긴급'][report.urgency_level - 1];
-            const statusText = {
-                '접수': '접수완료',
-                '검토중': '검토중',
-                '처리중': '처리중',
-                '완료': '처리완료'
-            }[report.status] || report.status;
+            const modalBody = document.getElementById('modalBody');
             
             let html = '';
             
-            // 기본 정보 섹션
+            // 기본 정보
             html += '<div class="detail-section">';
-            html += '<h3>📋 기본 정보</h3>';
-            html += '<div class="detail-row"><span class="detail-label">신고번호:</span><span class="detail-value">#' + report.id + '</span></div>';
-            html += '<div class="detail-row"><span class="detail-label">사용자ID:</span><span class="detail-value">' + report.user_id + '</span></div>';
-            html += '<div class="detail-row"><span class="detail-label">손상유형:</span><span class="detail-value">' + report.damage_type + '</span></div>';
-            html += '<div class="detail-row"><span class="detail-label">긴급도:</span><span class="detail-value"><span class="urgency-badge urgency-' + report.urgency_level + '">' + urgencyText + '</span></span></div>';
-            html += '<div class="detail-row"><span class="detail-label">상태:</span><span class="detail-value"><span class="status-badge status-' + report.status.toLowerCase() + '">' + statusText + '</span></span></div>';
-            html += '<div class="detail-row"><span class="detail-label">접수일:</span><span class="detail-value">' + new Date(report.created_at).toLocaleString('ko-KR') + '</span></div>';
-            html += '<div class="detail-row"><span class="detail-label">수정일:</span><span class="detail-value">' + new Date(report.updated_at).toLocaleString('ko-KR') + '</span></div>';
+            html += '<h3>기본 정보</h3>';
+            html += '<div class="detail-row"><div class="detail-label">신고 번호:</div><div class="detail-value">#' + report.report_id + '</div></div>';
+            html += '<div class="detail-row"><div class="detail-label">손상 유형:</div><div class="detail-value">' + report.damage_type + '</div></div>';
+            html += '<div class="detail-row"><div class="detail-label">긴급도:</div><div class="detail-value"><span class="urgency-badge urgency-' + report.urgency_level + '">' + report.urgency_label + '</span></div></div>';
+            html += '<div class="detail-row"><div class="detail-label">상태:</div><div class="detail-value"><span class="status-badge status-' + report.status.toLowerCase() + '">' + report.status + '</span></div></div>';
+            html += '<div class="detail-row"><div class="detail-label">신고자:</div><div class="detail-value">' + (report.user_id || '익명') + '</div></div>';
             html += '</div>';
             
-            // 위치 정보 섹션
-            if (report.location || (report.latitude && report.longitude)) {
-                html += '<div class="detail-section">';
-                html += '<h3>📍 위치 정보</h3>';
-                if (report.location) {
-                    html += '<div class="detail-row"><span class="detail-label">주소:</span><span class="detail-value">' + report.location + '</span></div>';
-                }
-                if (report.latitude && report.longitude) {
-                    html += '<div class="detail-row"><span class="detail-label">좌표:</span><span class="detail-value">위도 ' + report.latitude.toFixed(6) + ', 경도 ' + report.longitude.toFixed(6) + '</span></div>';
-                }
-                html += '</div>';
-            }
-            
-            // 담당 부서 정보 섹션
+            // 위치 정보
             html += '<div class="detail-section">';
-            html += '<h3>🏢 담당 부서</h3>';
-            html += '<div class="detail-row"><span class="detail-label">부서명:</span><span class="detail-value">' + report.department + '</span></div>';
-            html += '<div class="detail-row"><span class="detail-label">연락처:</span><span class="detail-value">' + report.department_contact + '</span></div>';
+            html += '<h3>위치 정보</h3>';
+            if (report.location) {
+                html += '<div class="detail-row"><div class="detail-label">주소:</div><div class="detail-value">' + report.location + '</div></div>';
+            }
+            if (report.latitude && report.longitude) {
+                html += '<div class="detail-row"><div class="detail-label">좌표:</div><div class="detail-value">위도 ' + report.latitude + ', 경도 ' + report.longitude + '</div></div>';
+                html += '<div class="detail-row"><div class="detail-label"></div><div class="detail-value"><a href="https://www.google.com/maps?q=' + report.latitude + ',' + report.longitude + '" target="_blank">📍 지도에서 보기</a></div></div>';
+            }
             html += '</div>';
             
-            // 설명 섹션
-            if (report.description) {
-                html += '<div class="detail-section">';
-                html += '<h3>📝 상세 설명</h3>';
-                html += '<div class="detail-value">' + report.description + '</div>';
-                html += '</div>';
-            }
+            // 담당 부서
+            html += '<div class="detail-section">';
+            html += '<h3>담당 부서</h3>';
+            html += '<div class="detail-row"><div class="detail-label">부서:</div><div class="detail-value">' + report.department + '</div></div>';
+            html += '<div class="detail-row"><div class="detail-label">연락처:</div><div class="detail-value">' + (report.contact || '없음') + '</div></div>';
+            html += '</div>';
             
-            // 이미지 섹션
+            // 신고 내용
+            html += '<div class="detail-section">';
+            html += '<h3>신고 내용</h3>';
+            html += '<div class="detail-row"><div class="detail-label">설명:</div><div class="detail-value">' + (report.description || '설명 없음') + '</div></div>';
+            html += '<div class="detail-row"><div class="detail-label">신고 시간:</div><div class="detail-value">' + new Date(report.created_at).toLocaleString() + '</div></div>';
+            html += '<div class="detail-row"><div class="detail-label">수정 시간:</div><div class="detail-value">' + new Date(report.updated_at).toLocaleString() + '</div></div>';
+            html += '</div>';
+            
+            // 이미지
             if (report.image_path) {
                 html += '<div class="detail-section">';
-                html += '<h3>📸 첨부 이미지</h3>';
-                html += '<img src="/uploads/' + report.image_path + '" alt="신고 이미지" class="image-preview">';
-                html += '<div class="no-image" style="display:none;">이미지를 불러올 수 없습니다.</div>';
+                html += '<h3>첨부 이미지</h3>';
+                html += '<img src="' + report.image_path + '" alt="신고 이미지" class="detail-image" onerror="this.style.display=\'none\'">';
                 html += '</div>';
             }
             
-            // 액션 버튼들
+            // 액션 버튼
             html += '<div class="action-buttons">';
-            
-            // 상태 변경 버튼들
-            const statusButtons = {
-                '접수': ['검토중', '완료'],
-                '검토중': ['처리중', '완료'],
-                '처리중': ['완료'],
-                '완료': []
-            };
-            
-            const availableStatuses = statusButtons[report.status] || [];
-            availableStatuses.forEach(status => {
-                const buttonClass = status === '완료' ? 'btn-success' : 
-                                  status === '처리중' ? 'btn-warning' : 'btn-primary';
-                html += '<button class="btn ' + buttonClass + '" data-action="update" data-report-id="' + report.id + '" data-status="' + status + '">' + status + '로 변경</button>';
-            });
-            
-            html += '<button class="btn btn-danger" data-action="delete" data-report-id="' + report.id + '">신고 삭제</button>';
-            html += '<button class="btn btn-secondary" data-action="close">닫기</button>';
+            if (report.status !== '완료') {
+                html += '<button class="btn btn-primary" onclick="updateReportStatus(' + report.report_id + ')">상태 업데이트</button>';
+                html += '<button class="btn btn-danger" onclick="deleteReport(' + report.report_id + ')">신고 삭제</button>';
+            }
+            html += '<button class="btn btn-secondary" onclick="closeReportModal()">닫기</button>';
             html += '</div>';
             
             modalBody.innerHTML = html;
-            
-            // 이벤트 리스너 추가
-            modalBody.addEventListener('click', function(e) {
-                if (e.target.classList.contains('btn')) {
-                    const action = e.target.getAttribute('data-action');
-                    const reportId = e.target.getAttribute('data-report-id');
-                    const status = e.target.getAttribute('data-status');
-                    
-                    if (action === 'update') {
-                        updateReportStatus(reportId, status);
-                    } else if (action === 'delete') {
-                        deleteReport(reportId);
-                    } else if (action === 'close') {
-                        closeReportModal();
-                    }
-                }
-            });
+        }
+
+        function updateReportStatus(reportId) {
+            const currentStatus = prompt('변경할 상태를 입력하세요 (접수, 검토중, 처리중, 완료):', '처리중');
+            if (currentStatus) {
+                fetch(`/api/report/${reportId}/status`, {
+                    method: 'POST',
+                    headers: {
+                        'Content-Type': 'application/json'
+                    },
+                    body: JSON.stringify({ status: currentStatus })
+                })
+                .then(response => response.json())
+                .then(data => {
+                    alert(data.message);
+                    refreshDashboard();
+                    closeReportModal();
+                })
+                .catch(error => {
+                    console.error('상태 업데이트 오류:', error);
+                    alert('상태 업데이트에 실패했습니다.');
+                });
+            }
+        }
+
+        function deleteReport(reportId) {
+            if (confirm('이 신고를 정말 삭제하시겠습니까?')) {
+                fetch(`/api/report/${reportId}`, {
+                    method: 'DELETE'
+                })
+                .then(response => response.json())
+                .then(data => {
+                    alert(data.message);
+                    refreshDashboard();
+                    closeReportModal();
+                })
+                .catch(error => {
+                    console.error('신고 삭제 오류:', error);
+                    alert('신고 삭제에 실패했습니다.');
+                });
+            }
         }
 
         function closeReportModal() {
-            document.getElementById('reportModal').style.display = 'none';
-        }
-
-        async function updateReportStatus(reportId, newStatus) {
-            if (!confirm('신고 #' + reportId + '의 상태를 \'' + newStatus + '\'로 변경하시겠습니까?')) {
-                return;
-            }
-            
-            try {
-                const response = await fetch('/api/report/' + reportId + '/status', {
-                    method: 'POST',
-                    headers: {
-                        'Content-Type': 'application/json',
-                    },
-                    body: JSON.stringify(newStatus)
-                });
-                
-                if (response.ok) {
-                    alert('신고 상태가 성공적으로 변경되었습니다.');
-                    closeReportModal();
-                    refreshDashboard(); // 대시보드 새로고침
-                } else {
-                    const error = await response.json();
-                    alert('상태 변경 실패: ' + error.detail);
-                }
-            } catch (error) {
-                console.error('상태 변경 오류:', error);
-                alert('상태 변경 중 오류가 발생했습니다.');
-            }
-        }
-
-        async function deleteReport(reportId) {
-            if (!confirm('신고 #' + reportId + '를 삭제하시겠습니까?\n\n이 작업은 되돌릴 수 없습니다.')) {
-                return;
-            }
-            
-            try {
-                const response = await fetch('/api/report/' + reportId, {
-                    method: 'DELETE'
-                });
-                
-                if (response.ok) {
-                    alert('신고가 성공적으로 삭제되었습니다.');
-                    closeReportModal();
-                    refreshDashboard(); // 대시보드 새로고침
-                } else {
-                    const error = await response.json();
-                    alert('삭제 실패: ' + error.detail);
-                }
-            } catch (error) {
-                console.error('삭제 오류:', error);
-                alert('삭제 중 오류가 발생했습니다.');
-            }
+            const modal = document.getElementById('reportModal');
+            modal.style.display = 'none';
         }
 
         // 모달 외부 클릭시 닫기
         window.onclick = function(event) {
             const modal = document.getElementById('reportModal');
             if (event.target === modal) {
-                closeReportModal();
+                modal.style.display = 'none';
             }
         }
 
