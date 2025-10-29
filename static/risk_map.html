@@ -1,0 +1,195 @@
+<!DOCTYPE html>
+<html>
+<head>
+    
+    <meta http-equiv="content-type" content="text/html; charset=UTF-8" />
+    <script src="https://cdn.jsdelivr.net/npm/leaflet@1.9.3/dist/leaflet.js"></script>
+    <script src="https://code.jquery.com/jquery-3.7.1.min.js"></script>
+    <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.2.2/dist/js/bootstrap.bundle.min.js"></script>
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/Leaflet.awesome-markers/2.0.2/leaflet.awesome-markers.js"></script>
+    <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/leaflet@1.9.3/dist/leaflet.css"/>
+    <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/bootstrap@5.2.2/dist/css/bootstrap.min.css"/>
+    <link rel="stylesheet" href="https://netdna.bootstrapcdn.com/bootstrap/3.0.0/css/bootstrap-glyphicons.css"/>
+    <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/@fortawesome/fontawesome-free@6.2.0/css/all.min.css"/>
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/Leaflet.awesome-markers/2.0.2/leaflet.awesome-markers.css"/>
+    <link rel="stylesheet" href="https://cdn.jsdelivr.net/gh/python-visualization/folium/folium/templates/leaflet.awesome.rotate.min.css"/>
+    
+            <meta name="viewport" content="width=device-width,
+                initial-scale=1.0, maximum-scale=1.0, user-scalable=no" />
+            <style>
+                #map_10f688f32b894f61b86c608d82f35a87 {
+                    position: relative;
+                    width: 100.0%;
+                    height: 100.0%;
+                    left: 0.0%;
+                    top: 0.0%;
+                }
+                .leaflet-container { font-size: 1rem; }
+            </style>
+
+            <style>html, body {
+                width: 100%;
+                height: 100%;
+                margin: 0;
+                padding: 0;
+            }
+            </style>
+
+            <style>#map {
+                position:absolute;
+                top:0;
+                bottom:0;
+                right:0;
+                left:0;
+                }
+            </style>
+
+            <script>
+                L_NO_TOUCH = false;
+                L_DISABLE_3D = false;
+            </script>
+
+        
+</head>
+<body>
+    
+    
+    <div style="position: fixed; 
+                bottom: 50px; right: 50px; width: 220px; height: 220px; 
+                background-color: white; border:2px solid grey; z-index:9999; 
+                font-size:14px; padding: 10px">
+    <p style="margin-bottom: 10px; font-weight: bold;">위험도 범례</p>
+    <p><span style="color: #DC143C;">⬤</span> Level 5 - 긴급</p>
+    <p><span style="color: #FF6347;">⬤</span> Level 4 - 경고</p>
+    <p><span style="color: #FFA500;">⬤</span> Level 3 - 주의</p>
+    <p><span style="color: #FFFF99;">⬤</span> Level 2 - 보통</p>
+    <p><span style="color: #90EE90;">⬤</span> Level 1 - 낮음</p>
+    <p><span style="color: #808080;">⬤</span> 단독 신고</p>
+    <hr style="margin: 5px 0;">
+    <p><b>총 신고:</b> 2건</p>
+    <p><b>군집:</b> 0개</p>
+    <p><b>단독:</b> 2건</p>
+    </div>
+    
+    
+            <div class="folium-map" id="map_10f688f32b894f61b86c608d82f35a87" ></div>
+        
+</body>
+<script>
+    
+    
+            var map_10f688f32b894f61b86c608d82f35a87 = L.map(
+                "map_10f688f32b894f61b86c608d82f35a87",
+                {
+                    center: [37.56222222222222, 127.04388888888889],
+                    crs: L.CRS.EPSG3857,
+                    ...{
+  "zoom": 13,
+  "zoomControl": true,
+  "preferCanvas": false,
+}
+
+                }
+            );
+
+            
+
+        
+    
+            var tile_layer_b92b881505ba1f3060f9b5181adf7e33 = L.tileLayer(
+                "https://tile.openstreetmap.org/{z}/{x}/{y}.png",
+                {
+  "minZoom": 0,
+  "maxZoom": 19,
+  "maxNativeZoom": 19,
+  "noWrap": false,
+  "attribution": "\u0026copy; \u003ca href=\"https://www.openstreetmap.org/copyright\"\u003eOpenStreetMap\u003c/a\u003e contributors",
+  "subdomains": "abc",
+  "detectRetina": false,
+  "tms": false,
+  "opacity": 1,
+}
+
+            );
+        
+    
+            tile_layer_b92b881505ba1f3060f9b5181adf7e33.addTo(map_10f688f32b894f61b86c608d82f35a87);
+        
+    
+            var marker_a9adf0b36cf33328ca75d272de8850c4 = L.marker(
+                [37.535, 127.07194444444444],
+                {
+}
+            ).addTo(map_10f688f32b894f61b86c608d82f35a87);
+        
+    
+            var icon_cdeb5b5f1c9a98de8028fa72ad85e919 = L.AwesomeMarkers.icon(
+                {
+  "markerColor": "blue",
+  "iconColor": "white",
+  "icon": "record",
+  "prefix": "glyphicon",
+  "extraClasses": "fa-rotate-0",
+}
+            );
+        
+    
+        var popup_9533a9a7111d70a534fa40b4314387b9 = L.popup({
+  "maxWidth": 300,
+});
+
+        
+            
+                var html_1426aa57a232e5d90ca782a72af85aed = $(`<div id="html_1426aa57a232e5d90ca782a72af85aed" style="width: 100.0%; height: 100.0%;">         <div style="font-family: Arial; width: 250px;">             <h4 style="margin-bottom: 10px;">📍 신고 #83</h4>             <hr style="margin: 5px 0;">             <p><b>위험도:</b> 단독 (긴급도 2)</p>             <p><b>긴급도:</b> 2</p>             <p><b>시간:</b> 2025-10-29 09:18</p>             <p><b>위치:</b> 서울동자초등학교</p>         </div>         </div>`)[0];
+                popup_9533a9a7111d70a534fa40b4314387b9.setContent(html_1426aa57a232e5d90ca782a72af85aed);
+            
+        
+
+        marker_a9adf0b36cf33328ca75d272de8850c4.bindPopup(popup_9533a9a7111d70a534fa40b4314387b9)
+        ;
+
+        
+    
+    
+                marker_a9adf0b36cf33328ca75d272de8850c4.setIcon(icon_cdeb5b5f1c9a98de8028fa72ad85e919);
+            
+    
+            var marker_4ed0a255aaef0988c488d0f7936a7e14 = L.marker(
+                [37.589444444444446, 127.01583333333333],
+                {
+}
+            ).addTo(map_10f688f32b894f61b86c608d82f35a87);
+        
+    
+            var icon_9c1363776e3cb1e1de1342c4a61de322 = L.AwesomeMarkers.icon(
+                {
+  "markerColor": "blue",
+  "iconColor": "white",
+  "icon": "record",
+  "prefix": "glyphicon",
+  "extraClasses": "fa-rotate-0",
+}
+            );
+        
+    
+        var popup_cd8730b0f72f0e73dfc32ffd37f45b8d = L.popup({
+  "maxWidth": 300,
+});
+
+        
+            
+                var html_f69c8e7388d89a9f8cf57c97bf9e3d7e = $(`<div id="html_f69c8e7388d89a9f8cf57c97bf9e3d7e" style="width: 100.0%; height: 100.0%;">         <div style="font-family: Arial; width: 250px;">             <h4 style="margin-bottom: 10px;">📍 신고 #82</h4>             <hr style="margin: 5px 0;">             <p><b>위험도:</b> 단독 (긴급도 2)</p>             <p><b>긴급도:</b> 2</p>             <p><b>시간:</b> 2025-10-28 08:08</p>             <p><b>위치:</b> 서울돈암동우체국</p>         </div>         </div>`)[0];
+                popup_cd8730b0f72f0e73dfc32ffd37f45b8d.setContent(html_f69c8e7388d89a9f8cf57c97bf9e3d7e);
+            
+        
+
+        marker_4ed0a255aaef0988c488d0f7936a7e14.bindPopup(popup_cd8730b0f72f0e73dfc32ffd37f45b8d)
+        ;
+
+        
+    
+    
+                marker_4ed0a255aaef0988c488d0f7936a7e14.setIcon(icon_9c1363776e3cb1e1de1342c4a61de322);
+            
+</script>
+</html>

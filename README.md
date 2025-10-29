@@ -118,7 +118,7 @@ cd vandalism
 
 ### 2. 가상환경 설정
 ```bash
-python3 -m venv venv
+python3.10 -m venv venv
 source venv/bin/activate  # Windows: venv\Scripts\activate
 ```
 

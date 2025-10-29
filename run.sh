@@ -7,7 +7,8 @@ echo "🏛️ 공공기물 파손 신고 챗봇을 시작합니다..."
 # 가상환경 확인 및 생성
 if [ ! -d "venv" ]; then
     echo "📦 가상환경을 생성합니다..."
-    python3 -m venv venv
+    # Python 3.13 사용 (langchain 호환성)
+    python3.10 -m venv venv || python3 -m venv venv
 fi
 
 # 가상환경 활성화

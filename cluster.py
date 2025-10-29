@@ -169,7 +169,7 @@ def trigger_emergency_alerts(reports_df, cluster_summary_df, alert_threshold=4):
 # ============================================
 # 4. Folium 지도 시각화 함수
 # ============================================
-def create_risk_visualization_map(reports_df, cluster_summary_df):
+def create_risk_visualization_map(reports_df, cluster_summary_df, output_file=None):
     """위험도 기반 인터랙티브 지도 생성"""
     # 지도 중심 계산
     center_lat = reports_df['latitude'].mean()
@@ -235,57 +235,58 @@ def create_risk_visualization_map(reports_df, cluster_summary_df):
         ).add_to(m)
     
     # 군집 중심 마커 - 크기와 위험도에 맞게 표시
-    for idx, cluster in cluster_summary_df.iterrows():
-        color = risk_colors.get(cluster['risk_level'], '#808080')
-        
-        # 군집 크기에 따른 반경 계산
-        base_radius = min(max(cluster['report_count'] * 3 + 10, 15), 50)
-        
-        # 군집의 주소 정보 (있으면 표시)
-        if 'address' in cluster and cluster['address']:
-            location_info = f"<p><b>위치:</b> {cluster['address']}</p>"
-        else:
-            location_info = f"<p><b>위치:</b> 위도 {cluster['center_lat']:.6f}, 경도 {cluster['center_lon']:.6f}</p>"
-        
-        cluster_popup = f"""
-        <div style="font-family: Arial; width: 300px;">
-            <h4 style="margin-bottom: 10px;">🎯 군집 #{cluster['cluster_id']}</h4>
-            <hr style="margin: 5px 0;">
-            {location_info}
-            <p><b>위험도:</b> Level {cluster['risk_level']} ({cluster['risk_label']})</p>
-            <p><b>위험 점수:</b> {cluster['risk_score']}</p>
-            <p><b>신고 건수:</b> {cluster['report_count']}건</p>
-            <p><b>평균 긴급도:</b> {cluster['avg_emergency']}</p>
-            <p><b>최대 긴급도:</b> {cluster['max_emergency']}</p>
-            <p><b>신고 ID:</b> {', '.join(map(str, cluster['report_ids']))}</p>
-        </div>
-        """
-        
-        # 군집 중심 마커
-        folium.CircleMarker(
-            location=[cluster['center_lat'], cluster['center_lon']],
-            radius=base_radius,
-            popup=folium.Popup(cluster_popup, max_width=350),
-            color=color,
-            fill=True,
-            fillColor=color,
-            fillOpacity=0.6,
-            weight=2
-        ).add_to(m)
-        
-        # 군집 영향 범위 표시 (300m 기준)
-        influence_radius = 300  # 고정 300m
-        folium.Circle(
-            location=[cluster['center_lat'], cluster['center_lon']],
-            radius=influence_radius,
-            color=color,
-            fill=True,
-            fillColor=color,
-            fillOpacity=0.15,
-            weight=2,
-            dashArray='5, 5',
-            popup=f"군집 영향 범위: 약 {influence_radius}m"
-        ).add_to(m)
+    if not cluster_summary_df.empty:
+        for idx, cluster in cluster_summary_df.iterrows():
+            color = risk_colors.get(cluster['risk_level'], '#808080')
+            
+            # 군집 크기에 따른 반경 계산
+            base_radius = min(max(cluster['report_count'] * 3 + 10, 15), 50)
+            
+            # 군집의 주소 정보 (있으면 표시)
+            if 'address' in cluster and cluster['address']:
+                location_info = f"<p><b>위치:</b> {cluster['address']}</p>"
+            else:
+                location_info = f"<p><b>위치:</b> 위도 {cluster['center_lat']:.6f}, 경도 {cluster['center_lon']:.6f}</p>"
+            
+            cluster_popup = f"""
+            <div style="font-family: Arial; width: 300px;">
+                <h4 style="margin-bottom: 10px;">🎯 군집 #{cluster['cluster_id']}</h4>
+                <hr style="margin: 5px 0;">
+                {location_info}
+                <p><b>위험도:</b> Level {cluster['risk_level']} ({cluster['risk_label']})</p>
+                <p><b>위험 점수:</b> {cluster['risk_score']}</p>
+                <p><b>신고 건수:</b> {cluster['report_count']}건</p>
+                <p><b>평균 긴급도:</b> {cluster['avg_emergency']}</p>
+                <p><b>최대 긴급도:</b> {cluster['max_emergency']}</p>
+                <p><b>신고 ID:</b> {', '.join(map(str, cluster['report_ids']))}</p>
+            </div>
+            """
+            
+            # 군집 중심 마커
+            folium.CircleMarker(
+                location=[cluster['center_lat'], cluster['center_lon']],
+                radius=base_radius,
+                popup=folium.Popup(cluster_popup, max_width=350),
+                color=color,
+                fill=True,
+                fillColor=color,
+                fillOpacity=0.6,
+                weight=2
+            ).add_to(m)
+            
+            # 군집 영향 범위 표시 (300m 기준)
+            influence_radius = 300  # 고정 300m
+            folium.Circle(
+                location=[cluster['center_lat'], cluster['center_lon']],
+                radius=influence_radius,
+                color=color,
+                fill=True,
+                fillColor=color,
+                fillOpacity=0.15,
+                weight=2,
+                dashArray='5, 5',
+                popup=f"군집 영향 범위: 약 {influence_radius}m"
+            ).add_to(m)
     
     # 범례 추가
     legend_html = '''
@@ -317,13 +318,11 @@ def create_risk_visualization_map(reports_df, cluster_summary_df):
 def update_map_realtime(reports_df, cluster_summary_df, output_file='static/risk_map.html'):
     """실시간으로 지도를 업데이트"""
     try:
-        # 기존 지도 파일이 있으면 삭제
-        import os
-        if os.path.exists(output_file):
-            os.remove(output_file)
-        
         # 새로운 지도 생성
-        m = create_risk_visualization_map(reports_df, cluster_summary_df, output_file)
+        m = create_risk_visualization_map(reports_df, cluster_summary_df)
+        
+        # 지도 저장
+        m.save(output_file)
         
         logger.info(f"✅ 실시간 지도 업데이트 완료: {output_file}")
         return True
