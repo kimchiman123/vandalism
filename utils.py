@@ -83,3 +83,39 @@ def check_emergency_notification(urgency_level: int, cluster_info: list = None) 
     from advanced_features import notification_system
     return notification_system.should_send_emergency_notification(urgency_level, cluster_info)
 
+
+def summarize_text_with_textrank(text: str, ratio: float = 0.3) -> str:
+    """TextRank 알고리즘을 사용하여 텍스트 요약
+    
+    Args:
+        text: 요약할 텍스트
+        ratio: 요약 비율 (0.0 ~ 1.0). 0.3이면 원본의 30% 길이로 요약
+    
+    Returns:
+        요약된 텍스트
+    """
+    if not text or not text.strip():
+        return ""
+    
+    try:
+        from summa import summarizer
+        
+        # TextRank를 사용한 요약
+        summary = summarizer.summarize(text, ratio=ratio, language='korean')
+        
+        # 요약이 너무 짧거나 비어있으면 원본 텍스트 반환
+        if not summary or len(summary.strip()) < 10:
+            # 원본이 짧으면 그대로 반환
+            if len(text.strip()) < 100:
+                return text.strip()
+            # 원본이 길면 첫 부분만 반환
+            return text.strip()[:200] + "..."
+        
+        return summary.strip()
+        
+    except Exception as e:
+        logger.warning(f"TextRank 요약 실패, 원본 텍스트 일부 반환: {e}")
+        # 요약 실패 시 원본 텍스트의 일부 반환
+        if len(text.strip()) < 200:
+            return text.strip()
+        return text.strip()[:200] + "..."

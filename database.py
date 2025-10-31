@@ -21,11 +21,18 @@ def init_db():
             damage_type TEXT,
             urgency_level INTEGER,
             description TEXT,
+            description_summary TEXT,
             status TEXT DEFAULT '접수',
             created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
             updated_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP
         )
     ''')
+    
+    # 기존 테이블에 description_summary 필드가 없으면 추가 (마이그레이션)
+    cursor.execute('PRAGMA table_info(reports)')
+    columns = [column[1] for column in cursor.fetchall()]
+    if 'description_summary' not in columns:
+        cursor.execute('ALTER TABLE reports ADD COLUMN description_summary TEXT')
     
     cursor.execute('''
         CREATE TABLE IF NOT EXISTS departments (

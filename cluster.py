@@ -10,6 +10,7 @@ import warnings
 import sqlite3
 import requests
 import logging
+from scipy.spatial.distance import cdist
 warnings.filterwarnings('ignore')
 
 # 로깅 설정
@@ -19,9 +20,135 @@ logger = logging.getLogger(__name__)
 from geocoding import geocode_address
 
 # ============================================
+# 파주시 행정동 데이터
+# ============================================
+PAJU_ADMINISTRATIVE_DATA = {
+    '행정동명': [
+        '광탄면', '교하동', '금촌1동', '금촌2동', '금촌3동', '문산읍', 
+        '법원읍', '운정1동', '운정2동', '운정3동', '운정4동', '운정5동', 
+        '운정6동', '월롱면', '적성면', '조리읍', '탄현면', '파주읍', '파평면'
+    ],
+    '생활인구': [
+        2575.04, 10649.2, 21337.8, 23242.4, 15411.9, 29052.2,
+        2866.92, 43359.3, 41811.5, 54659.4, 20938.7, 31801.9,
+        16858.8, 3463.09, 915.31, 18057.8, 6335.53, 6571.94, 351.021
+    ],
+    '위도': [
+        37.77608949, 37.7530344, 37.76634952, 37.75158647, 37.77142492, 37.8564838,
+        37.84916233, 37.72410286, 37.72410286, 37.71711553, 37.71891047, 37.72023157,
+        37.71269086, 37.79598237, 37.95426387, 37.74476914, 37.80250643, 37.83075004, 37.92190269
+    ],
+    '경도': [
+        126.8515722, 126.7469049, 126.775969, 126.7771997, 126.7783939, 126.7909532,
+        126.8823932, 126.7515039, 126.7515039, 126.7436261, 126.7689073, 126.7105658,
+        126.7204332, 126.7902613, 126.9175467, 126.8052165, 126.7161543, 126.8199815, 126.8375401
+    ]
+}
+
+# DataFrame으로 변환
+paju_admin_df = pd.DataFrame(PAJU_ADMINISTRATIVE_DATA)
+
+# ============================================
+# 0. 행정동 기반 동적 군집 반경 계산
+# ============================================
+def haversine_distance(lat1, lon1, lat2, lon2):
+    """
+    두 좌표 간의 Haversine 거리 계산 (km 단위)
+    """
+    R = 6371.0  # 지구 반지름 (km)
+    
+    lat1_rad = np.radians(lat1)
+    lat2_rad = np.radians(lat2)
+    delta_lat = np.radians(lat2 - lat1)
+    delta_lon = np.radians(lon2 - lon1)
+    
+    a = np.sin(delta_lat / 2)**2 + np.cos(lat1_rad) * np.cos(lat2_rad) * np.sin(delta_lon / 2)**2
+    c = 2 * np.arctan2(np.sqrt(a), np.sqrt(1 - a))
+    
+    return R * c
+
+def assign_reports_to_admin_districts(df, admin_df=paju_admin_df):
+    """
+    각 신고를 가장 가까운 행정동에 매칭
+    
+    Parameters:
+    -----------
+    df : pd.DataFrame
+        신고 데이터프레임 (latitude, longitude 필요)
+    admin_df : pd.DataFrame
+        행정동 데이터프레임 (위도, 경도, 생활인구 필요)
+    
+    Returns:
+    --------
+    pd.DataFrame
+        행정동 정보가 추가된 데이터프레임
+    """
+    df = df.copy()
+    df['행정동명'] = None
+    df['생활인구'] = None
+    df['동적_eps_km'] = None
+    
+    for idx, report in df.iterrows():
+        # 각 행정동까지의 거리 계산
+        distances = []
+        for _, admin in admin_df.iterrows():
+            dist = haversine_distance(
+                report['latitude'], report['longitude'],
+                admin['위도'], admin['경도']
+            )
+            distances.append(dist)
+        
+        # 가장 가까운 행정동 찾기
+        min_dist_idx = np.argmin(distances)
+        nearest_admin = admin_df.iloc[min_dist_idx]
+        
+        df.at[idx, '행정동명'] = nearest_admin['행정동명']
+        df.at[idx, '생활인구'] = nearest_admin['생활인구']
+    
+    return df
+
+def calculate_dynamic_eps(population, base_eps=0.5, min_eps=0.2, max_eps=1.5):
+    """
+    생활인구에 따라 동적으로 eps (군집 반경) 계산
+    
+    인구수가 적으면 → eps 크게 (군집 범위 크게)
+    인구수가 많으면 → eps 작게 (군집 범위 작게)
+    
+    Parameters:
+    -----------
+    population : float
+        생활인구 수
+    base_eps : float
+        기준 eps 값 (km)
+    min_eps : float
+        최소 eps 값 (km)
+    max_eps : float
+        최대 eps 값 (km)
+    
+    Returns:
+    --------
+    float
+        계산된 eps 값 (km)
+    """
+    # 인구수 정규화 (로그 스케일 사용하여 극단값 완화)
+    # 파주시 최소 인구: ~350, 최대 인구: ~54,000
+    min_pop = 350
+    max_pop = 55000
+    
+    # 로그 스케일로 정규화
+    normalized_pop = (np.log(population + 1) - np.log(min_pop)) / (np.log(max_pop) - np.log(min_pop))
+    normalized_pop = np.clip(normalized_pop, 0, 1)  # 0~1 사이로 제한
+    
+    # 인구가 많을수록 eps를 작게, 적을수록 크게
+    # 역비례 관계: eps = max_eps - (normalized_pop * (max_eps - min_eps))
+    dynamic_eps = max_eps - (normalized_pop * (max_eps - min_eps))
+    
+    return round(dynamic_eps, 2)
+
+# ============================================
 # 1. DBSCAN 군집 분석 함수
 # ============================================
-def perform_dbscan_clustering(df, eps_km=0.3, min_samples=2):
+def perform_dbscan_clustering(df, eps_km=0.3, min_samples=2, use_dynamic_eps=True):
     """
     DBSCAN을 사용한 지리적 군집 분석
     
@@ -30,24 +157,91 @@ def perform_dbscan_clustering(df, eps_km=0.3, min_samples=2):
     df : pd.DataFrame
         신고 데이터프레임
     eps_km : float
-        군집 반경 (킬로미터) - 기본 300m
+        군집 반경 (킬로미터) - 기본 300m (use_dynamic_eps=False일 때 사용)
     min_samples : int
         군집 형성 최소 신고 수 - 기본 2개
+    use_dynamic_eps : bool
+        True이면 행정동별 인구 기반 동적 eps 사용, False이면 고정 eps 사용
     
     Returns:
     --------
     pd.DataFrame
         군집 정보가 추가된 데이터프레임
     """
-    coords = df[['latitude', 'longitude']].values
-    coords_rad = np.radians(coords)
+    df = df.copy()
     
-    kms_per_radian = 6371.0088
-    epsilon = eps_km / kms_per_radian
-    
-    dbscan = DBSCAN(eps=epsilon, min_samples=min_samples, 
-                    algorithm='ball_tree', metric='haversine')
-    df['cluster'] = dbscan.fit_predict(coords_rad)
+    # 동적 eps 사용 시 행정동 정보 추가
+    if use_dynamic_eps:
+        print("📍 신고 지점을 행정동에 매칭 중...")
+        df = assign_reports_to_admin_districts(df)
+        
+        # 각 신고에 대해 동적 eps 계산
+        for idx, row in df.iterrows():
+            dynamic_eps = calculate_dynamic_eps(row['생활인구'])
+            df.at[idx, '동적_eps_km'] = dynamic_eps
+        
+        print("\n📊 행정동별 동적 eps 통계:")
+        admin_eps_summary = df.groupby('행정동명').agg({
+            '생활인구': 'first',
+            '동적_eps_km': 'first'
+        }).sort_values('생활인구')
+        print(admin_eps_summary.to_string())
+        
+        # 동적 eps를 사용하여 군집화
+        # 각 점에 대해 개별적으로 eps를 적용하기 위해 수정된 접근 방식 사용
+        df['cluster'] = -1  # 초기화
+        cluster_id = 0
+        processed = set()
+        
+        coords = df[['latitude', 'longitude']].values
+        eps_values = df['동적_eps_km'].values
+        
+        for i in range(len(df)):
+            if i in processed:
+                continue
+            
+            # 현재 점의 eps로 이웃 찾기
+            neighbors = []
+            for j in range(len(df)):
+                if i != j:
+                    dist = haversine_distance(
+                        coords[i][0], coords[i][1],
+                        coords[j][0], coords[j][1]
+                    )
+                    # 두 점 중 큰 eps 값 사용 (더 포괄적인 군집화)
+                    effective_eps = max(eps_values[i], eps_values[j])
+                    if dist <= effective_eps:
+                        neighbors.append(j)
+            
+            # min_samples 조건 확인
+            if len(neighbors) + 1 >= min_samples:  # 자기 자신 포함
+                # 새 군집 생성
+                df.at[df.index[i], 'cluster'] = cluster_id
+                processed.add(i)
+                
+                # 이웃들도 같은 군집에 추가
+                for neighbor_idx in neighbors:
+                    if neighbor_idx not in processed:
+                        df.at[df.index[neighbor_idx], 'cluster'] = cluster_id
+                        processed.add(neighbor_idx)
+                
+                cluster_id += 1
+        
+        print(f"\n✅ 동적 eps 기반 군집화 완료: {cluster_id}개 군집 생성")
+        
+    else:
+        # 기존 방식: 고정 eps 사용
+        coords = df[['latitude', 'longitude']].values
+        coords_rad = np.radians(coords)
+        
+        kms_per_radian = 6371.0088
+        epsilon = eps_km / kms_per_radian
+        
+        dbscan = DBSCAN(eps=epsilon, min_samples=min_samples, 
+                        algorithm='ball_tree', metric='haversine')
+        df['cluster'] = dbscan.fit_predict(coords_rad)
+        
+        print(f"✅ 고정 eps ({eps_km}km) 기반 군집화 완료")
     
     return df
 
@@ -216,20 +410,36 @@ def create_risk_visualization_map(reports_df, cluster_summary_df, output_file=No
         else:
             location_display = f"위도: {report['latitude']:.6f}, 경도: {report['longitude']:.6f}"
         
+        # 행정동 정보 추가 (있는 경우)
+        admin_info = ""
+        if '행정동명' in report and pd.notna(report['행정동명']):
+            admin_info = f"""
+            <p><b>행정동:</b> {report['행정동명']}</p>
+            <p><b>생활인구:</b> {report['생활인구']:,.0f}명</p>
+            """
+            if '동적_eps_km' in report and pd.notna(report['동적_eps_km']):
+                admin_info += f"<p><b>군집 반경:</b> {report['동적_eps_km']}km</p>"
+        
+        # 손상 유형 표시 (있는 경우)
+        damage_type_display = ""
+        if 'damage_type' in report and pd.notna(report['damage_type']) and report['damage_type']:
+            damage_type_display = f" - {report['damage_type']}"
+        
         popup_html = f"""
-        <div style="font-family: Arial; width: 250px;">
-            <h4 style="margin-bottom: 10px;">📍 신고 #{report['report_id']}</h4>
+        <div style="font-family: Arial; width: 280px;">
+            <h4 style="margin-bottom: 10px;">📍 신고#{report['report_id']}{damage_type_display}</h4>
             <hr style="margin: 5px 0;">
             <p><b>위험도:</b> {risk_display}</p>
             <p><b>긴급도:</b> {report['emergency_level']}</p>
             <p><b>시간:</b> {report['timestamp'].strftime('%Y-%m-%d %H:%M')}</p>
             <p><b>위치:</b> {location_display}</p>
+            {admin_info}
         </div>
         """
         
         folium.Marker(
             location=[report['latitude'], report['longitude']],
-            popup=folium.Popup(popup_html, max_width=300),
+            popup=folium.Popup(popup_html, max_width=320),
             icon=folium.Icon(color='red' if report.get('risk_level', 1) >= 4 else 'blue', 
                            icon=icon)
         ).add_to(m)
@@ -242,17 +452,39 @@ def create_risk_visualization_map(reports_df, cluster_summary_df, output_file=No
             # 군집 크기에 따른 반경 계산
             base_radius = min(max(cluster['report_count'] * 3 + 10, 15), 50)
             
+            # 군집에 속한 신고들의 평균 동적 eps 계산
+            cluster_reports = reports_df[reports_df['cluster'] == cluster['cluster_id']]
+            avg_dynamic_eps = None
+            admin_names = set()
+            
+            if '동적_eps_km' in cluster_reports.columns:
+                avg_dynamic_eps = cluster_reports['동적_eps_km'].mean()
+                influence_radius = avg_dynamic_eps * 1000  # km를 m로 변환
+            else:
+                influence_radius = 300  # 기본값 300m
+            
+            if '행정동명' in cluster_reports.columns:
+                admin_names = cluster_reports['행정동명'].dropna().unique()
+            
             # 군집의 주소 정보 (있으면 표시)
             if 'address' in cluster and cluster['address']:
                 location_info = f"<p><b>위치:</b> {cluster['address']}</p>"
             else:
                 location_info = f"<p><b>위치:</b> 위도 {cluster['center_lat']:.6f}, 경도 {cluster['center_lon']:.6f}</p>"
             
+            # 행정동 정보 추가
+            admin_info = ""
+            if len(admin_names) > 0:
+                admin_info = f"<p><b>행정동:</b> {', '.join(admin_names)}</p>"
+            if avg_dynamic_eps:
+                admin_info += f"<p><b>평균 군집 반경:</b> {avg_dynamic_eps:.2f}km ({influence_radius:.0f}m)</p>"
+            
             cluster_popup = f"""
-            <div style="font-family: Arial; width: 300px;">
+            <div style="font-family: Arial; width: 320px;">
                 <h4 style="margin-bottom: 10px;">🎯 군집 #{cluster['cluster_id']}</h4>
                 <hr style="margin: 5px 0;">
                 {location_info}
+                {admin_info}
                 <p><b>위험도:</b> Level {cluster['risk_level']} ({cluster['risk_label']})</p>
                 <p><b>위험 점수:</b> {cluster['risk_score']}</p>
                 <p><b>신고 건수:</b> {cluster['report_count']}건</p>
@@ -266,7 +498,7 @@ def create_risk_visualization_map(reports_df, cluster_summary_df, output_file=No
             folium.CircleMarker(
                 location=[cluster['center_lat'], cluster['center_lon']],
                 radius=base_radius,
-                popup=folium.Popup(cluster_popup, max_width=350),
+                popup=folium.Popup(cluster_popup, max_width=360),
                 color=color,
                 fill=True,
                 fillColor=color,
@@ -274,8 +506,7 @@ def create_risk_visualization_map(reports_df, cluster_summary_df, output_file=No
                 weight=2
             ).add_to(m)
             
-            # 군집 영향 범위 표시 (300m 기준)
-            influence_radius = 300  # 고정 300m
+            # 군집 영향 범위 표시 (동적 eps 기반)
             folium.Circle(
                 location=[cluster['center_lat'], cluster['center_lon']],
                 radius=influence_radius,
@@ -285,7 +516,7 @@ def create_risk_visualization_map(reports_df, cluster_summary_df, output_file=No
                 fillOpacity=0.15,
                 weight=2,
                 dashArray='5, 5',
-                popup=f"군집 영향 범위: 약 {influence_radius}m"
+                popup=f"군집 영향 범위: 약 {influence_radius:.0f}m"
             ).add_to(m)
     
     # 범례 추가
@@ -331,7 +562,7 @@ def update_map_realtime(reports_df, cluster_summary_df, output_file='static/risk
         logger.error(f"❌ 실시간 지도 업데이트 실패: {e}")
         return False
 
-def analyze_with_address_input(addresses_list, eps_km=0.5, min_samples=3, output_file='static/risk_map.html'):
+def analyze_with_address_input(addresses_list, eps_km=0.5, min_samples=3, output_file='static/risk_map.html', use_dynamic_eps=True):
     """
     주소 리스트를 입력받아 군집 분석 수행
     
@@ -341,14 +572,16 @@ def analyze_with_address_input(addresses_list, eps_km=0.5, min_samples=3, output
         주소 정보 리스트
         예: [{'address': '서울시 강남구', 'damage_type': '가로등', 'urgency_level': 3}, ...]
     eps_km : float
-        군집 반경 (킬로미터)
+        군집 반경 (킬로미터) - use_dynamic_eps=False일 때 사용
     min_samples : int
         군집 형성 최소 신고 수
     output_file : str
         출력 HTML 파일 이름
+    use_dynamic_eps : bool
+        True이면 행정동별 인구 기반 동적 eps 사용 (기본값)
     """
     print("\n" + "="*80)
-    print("📊 주소 기반 공공기물 파손 신고 군집 분석 시스템")
+    print("📊 주소 기반 공공기물 파손 신고 군집 분석 시스템 (파주시)")
     print("="*80)
     
     if not addresses_list or len(addresses_list) == 0:
@@ -381,8 +614,12 @@ def analyze_with_address_input(addresses_list, eps_km=0.5, min_samples=3, output
         return None
     
     # DBSCAN 군집 분석
-    print(f"\n🔍 DBSCAN 군집 분석 시작 (반경: {eps_km}km, 최소 신고 수: {min_samples})")
-    df = perform_dbscan_clustering(df, eps_km, min_samples)
+    if use_dynamic_eps:
+        print(f"\n🔍 동적 eps 기반 DBSCAN 군집 분석 시작 (최소 신고 수: {min_samples})")
+    else:
+        print(f"\n🔍 고정 eps 기반 DBSCAN 군집 분석 시작 (반경: {eps_km}km, 최소 신고 수: {min_samples})")
+    
+    df = perform_dbscan_clustering(df, eps_km, min_samples, use_dynamic_eps=use_dynamic_eps)
     
     # 군집 통계
     num_clusters = len(df[df['cluster'] != -1]['cluster'].unique())

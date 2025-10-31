@@ -15,7 +15,7 @@ from database import (
     get_all_reports, get_statistics, auto_update_status
 )
 from ai import analyze_image
-from utils import extract_location, calculate_urgency, estimate_processing_time, check_emergency_notification
+from utils import extract_location, calculate_urgency, estimate_processing_time, check_emergency_notification, summarize_text_with_textrank
 from test_data import create_test_report_data
 from cluster import (
     update_map_realtime, perform_dbscan_clustering, 
@@ -51,15 +51,27 @@ async def create_report(request: ReportRequest):
         cursor = conn.cursor()
         
         damage_type = request.damage_type or "기타"
-        urgency_level = calculate_urgency(damage_type, request.description or "")
+        description = request.description or ""
+        urgency_level = calculate_urgency(damage_type, description)
+        
+        # TextRank 알고리즘을 사용하여 설명 요약 생성
+        description_summary = ""
+        if description:
+            try:
+                description_summary = summarize_text_with_textrank(description, ratio=0.3)
+                logger.info(f"✅ 설명 요약 생성 완료: 원본 {len(description)}자 → 요약 {len(description_summary)}자")
+            except Exception as e:
+                logger.warning(f"⚠️ 설명 요약 생성 실패: {e}")
+                # 요약 실패 시 원본 텍스트의 일부 사용
+                description_summary = description[:200] + "..." if len(description) > 200 else description
         
         dept_info = get_department(damage_type)
         
-        # 위치 정보와 함께 삽입
+        # 위치 정보와 함께 삽입 (description_summary 필드 추가)
         cursor.execute('''
-        INSERT INTO reports (user_id, damage_type, description, urgency_level, status, latitude, longitude)
-        VALUES (?, ?, ?, ?, ?, ?, ?)
-        ''', (request.user_id, damage_type, request.description, urgency_level, '접수', 
+        INSERT INTO reports (user_id, damage_type, description, description_summary, urgency_level, status, latitude, longitude)
+        VALUES (?, ?, ?, ?, ?, ?, ?, ?)
+        ''', (request.user_id, damage_type, description, description_summary, urgency_level, '접수', 
               request.latitude, request.longitude))
         
         report_id = cursor.lastrowid
@@ -86,7 +98,7 @@ async def create_report(request: ReportRequest):
                 df = pd.DataFrame(reports, columns=['report_id', 'latitude', 'longitude', 'emergency_level', 'timestamp', 'damage_type', 'location'])
                 df['timestamp'] = pd.to_datetime(df['timestamp'])
                 
-                df = perform_dbscan_clustering(df, eps_km=0.3, min_samples=2)
+                df = perform_dbscan_clustering(df, eps_km=0.3, min_samples=3)
                 num_clusters = len(df[df['cluster'] != -1]['cluster'].unique())
                 
                 if num_clusters > 0:
@@ -241,7 +253,7 @@ async def get_report_detail(report_id: int):
         cursor = conn.cursor()
         
         cursor.execute('''
-            SELECT id, user_id, damage_type, description, urgency_level, status, 
+            SELECT id, user_id, damage_type, description, description_summary, urgency_level, status, 
                    created_at, updated_at, latitude, longitude, location, image_path
             FROM reports 
             WHERE id = ?
@@ -253,7 +265,7 @@ async def get_report_detail(report_id: int):
         if not result:
             raise HTTPException(status_code=404, detail="신고를 찾을 수 없습니다.")
         
-        report_id, user_id, damage_type, description, urgency_level, status, \
+        report_id, user_id, damage_type, description, description_summary, urgency_level, status, \
         created_at, updated_at, latitude, longitude, location, image_path = result
         
         dept_info = get_department(damage_type)
@@ -264,6 +276,7 @@ async def get_report_detail(report_id: int):
             "user_id": user_id,
             "damage_type": damage_type,
             "description": description or "설명 없음",
+            "description_summary": description_summary or "요약 없음",
             "urgency_level": urgency_level,
             "urgency_label": urgency_labels[urgency_level - 1],
             "status": status,
@@ -294,12 +307,12 @@ async def get_cluster_reports():
     try:
         reports = get_recent_reports_with_location(days=7)
         
-        if len(reports) < 2:
+        if len(reports) < 3:
             return {
                 "clusters": [], 
                 "total_reports": len(reports),
                 "cluster_count": 0,
-                "message": "군집 분석을 위한 충분한 데이터가 없습니다. (최소 2개 이상 필요)"
+                "message": "군집 분석을 위한 충분한 데이터가 없습니다. (최소 3개 이상 필요)"
             }
         
         # 데이터베이스에서 반환되는 순서: id, latitude, longitude, urgency_level, created_at, damage_type, location
@@ -309,7 +322,7 @@ async def get_cluster_reports():
         
         logger.info(f"데이터프레임 생성 완료: {len(df)}개 신고")
         
-        df = perform_dbscan_clustering(df, eps_km=0.3, min_samples=2)
+        df = perform_dbscan_clustering(df, eps_km=0.3, min_samples=3)
         num_clusters = len(df[df['cluster'] != -1]['cluster'].unique())
         
         logger.info(f"군집 분석 완료: {num_clusters}개 군집 탐지")
@@ -317,6 +330,10 @@ async def get_cluster_reports():
         if num_clusters > 0:
             cluster_summary = analyze_clusters(df)
             cluster_info = cluster_summary.to_dict('records')
+            
+            # DB에서 신고 상세 정보 가져오기
+            conn = sqlite3.connect('reports.db')
+            cursor = conn.cursor()
             
             for idx, cluster in enumerate(cluster_info):
                 cluster_id = cluster['cluster_id']
@@ -330,7 +347,63 @@ async def get_cluster_reports():
                 # max_urgency 추가 (advanced_features에서 필요)
                 cluster['max_urgency'] = int(cluster_reports['urgency_level'].max()) if len(cluster_reports) > 0 else 1
                 
+                # 군집에 포함된 신고 상세 정보 가져오기
+                report_ids = cluster['report_ids']
+                reports_detail = []
+                for report_id in report_ids:
+                    cursor.execute('''
+                        SELECT id, damage_type, description, description_summary, urgency_level, status, created_at, location
+                        FROM reports WHERE id = ?
+                    ''', (report_id,))
+                    result = cursor.fetchone()
+                    if result:
+                        reports_detail.append({
+                            'report_id': result[0],
+                            'damage_type': result[1] or '기타',
+                            'description': result[2] or '',
+                            'description_summary': result[3] or '',
+                            'urgency_level': result[4],
+                            'status': result[5],
+                            'created_at': result[6],
+                            'location': result[7] or ''
+                        })
+                
+                cluster['reports'] = reports_detail
+                
+                # 위험도 근거 생성
+                risk_reasons = []
+                
+                # 긴급도가 높은 신고가 많은 경우
+                high_urgency_count = len([r for r in reports_detail if r['urgency_level'] >= 4])
+                if high_urgency_count > 0:
+                    risk_reasons.append(f"긴급도 높은 신고 {high_urgency_count}건 포함 (긴급도 4 이상)")
+                
+                # 군집 크기가 큰 경우
+                if len(reports_detail) >= 5:
+                    risk_reasons.append(f"군집 크기가 큼 ({len(reports_detail)}건)")
+                elif len(reports_detail) >= 3:
+                    risk_reasons.append(f"군집 크기 적정 ({len(reports_detail)}건)")
+                
+                # 동일 손상 유형이 많은 경우
+                damage_types = [r['damage_type'] for r in reports_detail]
+                from collections import Counter
+                damage_type_counts = Counter(damage_types)
+                most_common_type, count = damage_type_counts.most_common(1)[0]
+                if count >= len(reports_detail) * 0.6:  # 60% 이상이 동일 유형
+                    risk_reasons.append(f"동일 손상 유형 집중 ({most_common_type} {count}건)")
+                
+                # 평균 긴급도가 높은 경우
+                avg_urgency = cluster['avg_emergency']
+                if avg_urgency >= 4.0:
+                    risk_reasons.append(f"평균 긴급도 매우 높음 ({avg_urgency:.2f})")
+                elif avg_urgency >= 3.0:
+                    risk_reasons.append(f"평균 긴급도 높음 ({avg_urgency:.2f})")
+                
+                cluster['risk_reasons'] = risk_reasons
+                
                 logger.info(f"군집 {cluster_id} 주소: {cluster['address']}")
+            
+            conn.close()
             
             logger.info(f"군집 정보 생성 완료: {len(cluster_info)}개")
         else:
@@ -683,7 +756,7 @@ async def debug_clusters():
             df['timestamp'] = pd.to_datetime(df['timestamp'])
             df['emergency_level'] = df['urgency_level']
             
-            df = perform_dbscan_clustering(df, eps_km=1.0, min_samples=2)
+            df = perform_dbscan_clustering(df, eps_km=1.0, min_samples=3)
             num_clusters = len(df[df['cluster'] != -1]['cluster'].unique())
             
             debug_info.update({

@@ -560,6 +560,12 @@
                 const analysis = result.analysis;
                 const location = result.location;
                 
+                // 이전 설명 입력 필드 초기화
+                const descriptionElement = document.getElementById('reportDescription');
+                if (descriptionElement) {
+                    descriptionElement.value = '';
+                }
+                
                 // 위치 정보 저장
                 this.currentLocation = {
                     latitude: location.latitude,
@@ -605,6 +611,11 @@
                 });
                 
                 buttons += '</div>';
+                
+                // 신고 설명 입력 필드 추가
+                buttons += '<br><div style="margin-top: 15px;"><label style="display: block; margin-bottom: 5px; font-weight: 600; color: #333;">📝 신고 내용 설명:</label>';
+                buttons += '<textarea id="reportDescription" placeholder="파손 상황을 자세히 설명해주세요. 예: 가로등이 기울어져 있고 불이 꺼져있습니다." style="width: 100%; padding: 10px; border: 1px solid #e9ecef; border-radius: 8px; font-size: 14px; min-height: 80px; resize: vertical; font-family: inherit;" rows="3"></textarea></div>';
+                
                 buttons += '<br><button class="damage-type-btn" onclick="chatBot.confirmReport()" style="background: #28a745; color: white;">✅ 신고 접수하기</button>';
                 
                 return buttons;
@@ -783,6 +794,10 @@
                     return;
                 }
 
+                // 설명 입력 필드에서 내용 가져오기
+                const descriptionElement = document.getElementById('reportDescription');
+                const description = descriptionElement ? descriptionElement.value.trim() : '';
+
                 this.addMessage('<div class="loading"></div> 신고를 접수하고 있습니다...', false);
 
                 try {
@@ -794,7 +809,7 @@
                         body: JSON.stringify({
                             user_id: 'user_' + Date.now(),
                             damage_type: this.selectedDamageType,
-                            description: '이미지 기반 자동 신고',
+                            description: description || '이미지 기반 자동 신고',
                             latitude: this.currentLocation?.latitude,
                             longitude: this.currentLocation?.longitude
                         })
@@ -816,6 +831,15 @@
                         message += `처리 상황을 실시간으로 확인할 수 있습니다.`;
                         
                         this.addMessage(message);
+                        
+                        // 신고 완료 후 설명 입력 필드 초기화
+                        const descriptionElement = document.getElementById('reportDescription');
+                        if (descriptionElement) {
+                            descriptionElement.value = '';
+                        }
+                        
+                        // 선택된 손상 유형도 초기화
+                        this.selectedDamageType = null;
                         
                         // 주기적으로 상태 확인
                         this.startStatusPolling();

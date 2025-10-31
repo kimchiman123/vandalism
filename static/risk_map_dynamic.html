@@ -1,0 +1,2433 @@
+<!DOCTYPE html>
+<html>
+<head>
+    
+    <meta http-equiv="content-type" content="text/html; charset=UTF-8" />
+    <script src="https://cdn.jsdelivr.net/npm/leaflet@1.9.3/dist/leaflet.js"></script>
+    <script src="https://code.jquery.com/jquery-3.7.1.min.js"></script>
+    <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.2.2/dist/js/bootstrap.bundle.min.js"></script>
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/Leaflet.awesome-markers/2.0.2/leaflet.awesome-markers.js"></script>
+    <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/leaflet@1.9.3/dist/leaflet.css"/>
+    <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/bootstrap@5.2.2/dist/css/bootstrap.min.css"/>
+    <link rel="stylesheet" href="https://netdna.bootstrapcdn.com/bootstrap/3.0.0/css/bootstrap-glyphicons.css"/>
+    <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/@fortawesome/fontawesome-free@6.2.0/css/all.min.css"/>
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/Leaflet.awesome-markers/2.0.2/leaflet.awesome-markers.css"/>
+    <link rel="stylesheet" href="https://cdn.jsdelivr.net/gh/python-visualization/folium/folium/templates/leaflet.awesome.rotate.min.css"/>
+    
+            <meta name="viewport" content="width=device-width,
+                initial-scale=1.0, maximum-scale=1.0, user-scalable=no" />
+            <style>
+                #map_08b7d57984f7604dfda2d2c8e942c5f0 {
+                    position: relative;
+                    width: 100.0%;
+                    height: 100.0%;
+                    left: 0.0%;
+                    top: 0.0%;
+                }
+                .leaflet-container { font-size: 1rem; }
+            </style>
+
+            <style>html, body {
+                width: 100%;
+                height: 100%;
+                margin: 0;
+                padding: 0;
+            }
+            </style>
+
+            <style>#map {
+                position:absolute;
+                top:0;
+                bottom:0;
+                right:0;
+                left:0;
+                }
+            </style>
+
+            <script>
+                L_NO_TOUCH = false;
+                L_DISABLE_3D = false;
+            </script>
+
+        
+</head>
+<body>
+    
+    
+    <div style="position: fixed; 
+                bottom: 50px; right: 50px; width: 220px; height: 220px; 
+                background-color: white; border:2px solid grey; z-index:9999; 
+                font-size:14px; padding: 10px">
+    <p style="margin-bottom: 10px; font-weight: bold;">위험도 범례</p>
+    <p><span style="color: #DC143C;">⬤</span> Level 5 - 긴급</p>
+    <p><span style="color: #FF6347;">⬤</span> Level 4 - 경고</p>
+    <p><span style="color: #FFA500;">⬤</span> Level 3 - 주의</p>
+    <p><span style="color: #FFFF99;">⬤</span> Level 2 - 보통</p>
+    <p><span style="color: #90EE90;">⬤</span> Level 1 - 낮음</p>
+    <p><span style="color: #808080;">⬤</span> 단독 신고</p>
+    <hr style="margin: 5px 0;">
+    <p><b>총 신고:</b> 50건</p>
+    <p><b>군집:</b> 9개</p>
+    <p><b>단독:</b> 25건</p>
+    </div>
+    
+    
+            <div class="folium-map" id="map_08b7d57984f7604dfda2d2c8e942c5f0" ></div>
+        
+</body>
+<script>
+    
+    
+            var map_08b7d57984f7604dfda2d2c8e942c5f0 = L.map(
+                "map_08b7d57984f7604dfda2d2c8e942c5f0",
+                {
+                    center: [37.556242556, 126.88858027600001],
+                    crs: L.CRS.EPSG3857,
+                    ...{
+  "zoom": 13,
+  "zoomControl": true,
+  "preferCanvas": false,
+}
+
+                }
+            );
+
+            
+
+        
+    
+            var tile_layer_81e886db2e7d3fb702a19a492db25206 = L.tileLayer(
+                "https://tile.openstreetmap.org/{z}/{x}/{y}.png",
+                {
+  "minZoom": 0,
+  "maxZoom": 19,
+  "maxNativeZoom": 19,
+  "noWrap": false,
+  "attribution": "\u0026copy; \u003ca href=\"https://www.openstreetmap.org/copyright\"\u003eOpenStreetMap\u003c/a\u003e contributors",
+  "subdomains": "abc",
+  "detectRetina": false,
+  "tms": false,
+  "opacity": 1,
+}
+
+            );
+        
+    
+            tile_layer_81e886db2e7d3fb702a19a492db25206.addTo(map_08b7d57984f7604dfda2d2c8e942c5f0);
+        
+    
+            var marker_6b30568ba563833e9431db70a63f0de8 = L.marker(
+                [37.77806, 126.76036],
+                {
+}
+            ).addTo(map_08b7d57984f7604dfda2d2c8e942c5f0);
+        
+    
+            var icon_a962a890f668c1d84fcb41636191acdc = L.AwesomeMarkers.icon(
+                {
+  "markerColor": "blue",
+  "iconColor": "white",
+  "icon": "exclamation-sign",
+  "prefix": "glyphicon",
+  "extraClasses": "fa-rotate-0",
+}
+            );
+        
+    
+        var popup_c19051b77237d9a720369bf748c69696 = L.popup({
+  "maxWidth": 320,
+});
+
+        
+            
+                var html_35894e20c7232bdcd41ca1fa097eac1c = $(`<div id="html_35894e20c7232bdcd41ca1fa097eac1c" style="width: 100.0%; height: 100.0%;">         <div style="font-family: Arial; width: 280px;">             <h4 style="margin-bottom: 10px;">📍 신고 #1</h4>             <hr style="margin: 5px 0;">             <p><b>위험도:</b> Level 3 (주의)</p>             <p><b>긴급도:</b> 5</p>             <p><b>시간:</b> 2025-10-30 23:04</p>             <p><b>위치:</b> 위도: 37.778060, 경도: 126.760360</p>                          <p><b>행정동:</b> 금촌3동</p>             <p><b>생활인구:</b> 15,412명</p>             <p><b>군집 반경:</b> 0.53km</p>         </div>         </div>`)[0];
+                popup_c19051b77237d9a720369bf748c69696.setContent(html_35894e20c7232bdcd41ca1fa097eac1c);
+            
+        
+
+        marker_6b30568ba563833e9431db70a63f0de8.bindPopup(popup_c19051b77237d9a720369bf748c69696)
+        ;
+
+        
+    
+    
+                marker_6b30568ba563833e9431db70a63f0de8.setIcon(icon_a962a890f668c1d84fcb41636191acdc);
+            
+    
+            var marker_d5c8900f0026d28ea2498b70743b7a6a = L.marker(
+                [37.7282859, 126.7734092],
+                {
+}
+            ).addTo(map_08b7d57984f7604dfda2d2c8e942c5f0);
+        
+    
+            var icon_0ea140fa5ad9d82001b25676b7d8cba8 = L.AwesomeMarkers.icon(
+                {
+  "markerColor": "blue",
+  "iconColor": "white",
+  "icon": "exclamation-sign",
+  "prefix": "glyphicon",
+  "extraClasses": "fa-rotate-0",
+}
+            );
+        
+    
+        var popup_2727bafc13357b1d08efdfd34d0b0835 = L.popup({
+  "maxWidth": 320,
+});
+
+        
+            
+                var html_5e1feeb705fdf3f14bb49e94d5f1381c = $(`<div id="html_5e1feeb705fdf3f14bb49e94d5f1381c" style="width: 100.0%; height: 100.0%;">         <div style="font-family: Arial; width: 280px;">             <h4 style="margin-bottom: 10px;">📍 신고 #2</h4>             <hr style="margin: 5px 0;">             <p><b>위험도:</b> Level 3 (주의)</p>             <p><b>긴급도:</b> 2</p>             <p><b>시간:</b> 2025-10-30 23:04</p>             <p><b>위치:</b> 위도: 37.728286, 경도: 126.773409</p>                          <p><b>행정동:</b> 운정4동</p>             <p><b>생활인구:</b> 20,939명</p>             <p><b>군집 반경:</b> 0.45km</p>         </div>         </div>`)[0];
+                popup_2727bafc13357b1d08efdfd34d0b0835.setContent(html_5e1feeb705fdf3f14bb49e94d5f1381c);
+            
+        
+
+        marker_d5c8900f0026d28ea2498b70743b7a6a.bindPopup(popup_2727bafc13357b1d08efdfd34d0b0835)
+        ;
+
+        
+    
+    
+                marker_d5c8900f0026d28ea2498b70743b7a6a.setIcon(icon_0ea140fa5ad9d82001b25676b7d8cba8);
+            
+    
+            var marker_805ecae8763f3d5c76b2fc72540ee324 = L.marker(
+                [37.7532481, 126.8140871],
+                {
+}
+            ).addTo(map_08b7d57984f7604dfda2d2c8e942c5f0);
+        
+    
+            var icon_49f945d93c0db7f25c49daaa70cec2ad = L.AwesomeMarkers.icon(
+                {
+  "markerColor": "blue",
+  "iconColor": "white",
+  "icon": "exclamation-sign",
+  "prefix": "glyphicon",
+  "extraClasses": "fa-rotate-0",
+}
+            );
+        
+    
+        var popup_94905c0fb47976ad51d4ed7bce07c958 = L.popup({
+  "maxWidth": 320,
+});
+
+        
+            
+                var html_77beb6558bb0ece8cb0eb707774d1a69 = $(`<div id="html_77beb6558bb0ece8cb0eb707774d1a69" style="width: 100.0%; height: 100.0%;">         <div style="font-family: Arial; width: 280px;">             <h4 style="margin-bottom: 10px;">📍 신고 #3</h4>             <hr style="margin: 5px 0;">             <p><b>위험도:</b> Level 3 (주의)</p>             <p><b>긴급도:</b> 4</p>             <p><b>시간:</b> 2025-10-30 23:04</p>             <p><b>위치:</b> 위도: 37.753248, 경도: 126.814087</p>                          <p><b>행정동:</b> 조리읍</p>             <p><b>생활인구:</b> 18,058명</p>             <p><b>군집 반경:</b> 0.49km</p>         </div>         </div>`)[0];
+                popup_94905c0fb47976ad51d4ed7bce07c958.setContent(html_77beb6558bb0ece8cb0eb707774d1a69);
+            
+        
+
+        marker_805ecae8763f3d5c76b2fc72540ee324.bindPopup(popup_94905c0fb47976ad51d4ed7bce07c958)
+        ;
+
+        
+    
+    
+                marker_805ecae8763f3d5c76b2fc72540ee324.setIcon(icon_49f945d93c0db7f25c49daaa70cec2ad);
+            
+    
+            var marker_3d818d65c423a45d9f7429f7b54b6c37 = L.marker(
+                [37.6580922, 126.6128547],
+                {
+}
+            ).addTo(map_08b7d57984f7604dfda2d2c8e942c5f0);
+        
+    
+            var icon_febe63c8bdcc20dee913d7eb64ebd429 = L.AwesomeMarkers.icon(
+                {
+  "markerColor": "red",
+  "iconColor": "white",
+  "icon": "fire",
+  "prefix": "glyphicon",
+  "extraClasses": "fa-rotate-0",
+}
+            );
+        
+    
+        var popup_75729e4965c0d39dcf1b3c04459fa76e = L.popup({
+  "maxWidth": 320,
+});
+
+        
+            
+                var html_04efa4d2c94b5077e42d1a48ba3676ea = $(`<div id="html_04efa4d2c94b5077e42d1a48ba3676ea" style="width: 100.0%; height: 100.0%;">         <div style="font-family: Arial; width: 280px;">             <h4 style="margin-bottom: 10px;">📍 신고 #4</h4>             <hr style="margin: 5px 0;">             <p><b>위험도:</b> Level 4 (경고)</p>             <p><b>긴급도:</b> 5</p>             <p><b>시간:</b> 2025-10-30 23:04</p>             <p><b>위치:</b> 위도: 37.658092, 경도: 126.612855</p>                          <p><b>행정동:</b> 운정5동</p>             <p><b>생활인구:</b> 31,802명</p>             <p><b>군집 반경:</b> 0.34km</p>         </div>         </div>`)[0];
+                popup_75729e4965c0d39dcf1b3c04459fa76e.setContent(html_04efa4d2c94b5077e42d1a48ba3676ea);
+            
+        
+
+        marker_3d818d65c423a45d9f7429f7b54b6c37.bindPopup(popup_75729e4965c0d39dcf1b3c04459fa76e)
+        ;
+
+        
+    
+    
+                marker_3d818d65c423a45d9f7429f7b54b6c37.setIcon(icon_febe63c8bdcc20dee913d7eb64ebd429);
+            
+    
+            var marker_5783c6ab38296fd10f85c9eb3b20649e = L.marker(
+                [37.7289702, 126.7779216],
+                {
+}
+            ).addTo(map_08b7d57984f7604dfda2d2c8e942c5f0);
+        
+    
+            var icon_acf194419fd60913ed01dc332ce23ef1 = L.AwesomeMarkers.icon(
+                {
+  "markerColor": "blue",
+  "iconColor": "white",
+  "icon": "exclamation-sign",
+  "prefix": "glyphicon",
+  "extraClasses": "fa-rotate-0",
+}
+            );
+        
+    
+        var popup_5f959b1bb1840bf15fa45ffad80e1f82 = L.popup({
+  "maxWidth": 320,
+});
+
+        
+            
+                var html_54caaba67b2a5a9b2e408a4a400d911d = $(`<div id="html_54caaba67b2a5a9b2e408a4a400d911d" style="width: 100.0%; height: 100.0%;">         <div style="font-family: Arial; width: 280px;">             <h4 style="margin-bottom: 10px;">📍 신고 #5</h4>             <hr style="margin: 5px 0;">             <p><b>위험도:</b> Level 3 (주의)</p>             <p><b>긴급도:</b> 5</p>             <p><b>시간:</b> 2025-10-30 23:04</p>             <p><b>위치:</b> 위도: 37.728970, 경도: 126.777922</p>                          <p><b>행정동:</b> 운정4동</p>             <p><b>생활인구:</b> 20,939명</p>             <p><b>군집 반경:</b> 0.45km</p>         </div>         </div>`)[0];
+                popup_5f959b1bb1840bf15fa45ffad80e1f82.setContent(html_54caaba67b2a5a9b2e408a4a400d911d);
+            
+        
+
+        marker_5783c6ab38296fd10f85c9eb3b20649e.bindPopup(popup_5f959b1bb1840bf15fa45ffad80e1f82)
+        ;
+
+        
+    
+    
+                marker_5783c6ab38296fd10f85c9eb3b20649e.setIcon(icon_acf194419fd60913ed01dc332ce23ef1);
+            
+    
+            var marker_e9e7a5f29b5d9c3e01ca3f2f3ac8a6e1 = L.marker(
+                [37.206285, 127.1422028],
+                {
+}
+            ).addTo(map_08b7d57984f7604dfda2d2c8e942c5f0);
+        
+    
+            var icon_3ccaa647390778ec1818c495396c5158 = L.AwesomeMarkers.icon(
+                {
+  "markerColor": "blue",
+  "iconColor": "white",
+  "icon": "record",
+  "prefix": "glyphicon",
+  "extraClasses": "fa-rotate-0",
+}
+            );
+        
+    
+        var popup_eb7b47a834fc646775f8c7c071d92946 = L.popup({
+  "maxWidth": 320,
+});
+
+        
+            
+                var html_c0aac44b3dae6929ebf9291adb949555 = $(`<div id="html_c0aac44b3dae6929ebf9291adb949555" style="width: 100.0%; height: 100.0%;">         <div style="font-family: Arial; width: 280px;">             <h4 style="margin-bottom: 10px;">📍 신고 #6</h4>             <hr style="margin: 5px 0;">             <p><b>위험도:</b> 단독 (긴급도 2)</p>             <p><b>긴급도:</b> 2</p>             <p><b>시간:</b> 2025-10-30 23:04</p>             <p><b>위치:</b> 위도: 37.206285, 경도: 127.142203</p>                          <p><b>행정동:</b> 운정4동</p>             <p><b>생활인구:</b> 20,939명</p>             <p><b>군집 반경:</b> 0.45km</p>         </div>         </div>`)[0];
+                popup_eb7b47a834fc646775f8c7c071d92946.setContent(html_c0aac44b3dae6929ebf9291adb949555);
+            
+        
+
+        marker_e9e7a5f29b5d9c3e01ca3f2f3ac8a6e1.bindPopup(popup_eb7b47a834fc646775f8c7c071d92946)
+        ;
+
+        
+    
+    
+                marker_e9e7a5f29b5d9c3e01ca3f2f3ac8a6e1.setIcon(icon_3ccaa647390778ec1818c495396c5158);
+            
+    
+            var marker_f6e503fcef533bce5829d226c063696c = L.marker(
+                [37.7850997, 126.8246821],
+                {
+}
+            ).addTo(map_08b7d57984f7604dfda2d2c8e942c5f0);
+        
+    
+            var icon_a0b34c08ef1263b3388c456c79fc1362 = L.AwesomeMarkers.icon(
+                {
+  "markerColor": "blue",
+  "iconColor": "white",
+  "icon": "record",
+  "prefix": "glyphicon",
+  "extraClasses": "fa-rotate-0",
+}
+            );
+        
+    
+        var popup_97eaa2aa9abf791842e0cf1fd94cb2d5 = L.popup({
+  "maxWidth": 320,
+});
+
+        
+            
+                var html_103b1754880cbf408a5db97961cc59fa = $(`<div id="html_103b1754880cbf408a5db97961cc59fa" style="width: 100.0%; height: 100.0%;">         <div style="font-family: Arial; width: 280px;">             <h4 style="margin-bottom: 10px;">📍 신고 #7</h4>             <hr style="margin: 5px 0;">             <p><b>위험도:</b> 단독 (긴급도 2)</p>             <p><b>긴급도:</b> 2</p>             <p><b>시간:</b> 2025-10-30 23:04</p>             <p><b>위치:</b> 위도: 37.785100, 경도: 126.824682</p>                          <p><b>행정동:</b> 광탄면</p>             <p><b>생활인구:</b> 2,575명</p>             <p><b>군집 반경:</b> 0.99km</p>         </div>         </div>`)[0];
+                popup_97eaa2aa9abf791842e0cf1fd94cb2d5.setContent(html_103b1754880cbf408a5db97961cc59fa);
+            
+        
+
+        marker_f6e503fcef533bce5829d226c063696c.bindPopup(popup_97eaa2aa9abf791842e0cf1fd94cb2d5)
+        ;
+
+        
+    
+    
+                marker_f6e503fcef533bce5829d226c063696c.setIcon(icon_a0b34c08ef1263b3388c456c79fc1362);
+            
+    
+            var marker_17c76f8498947af47de4496f92a3a151 = L.marker(
+                [37.77806, 126.76036],
+                {
+}
+            ).addTo(map_08b7d57984f7604dfda2d2c8e942c5f0);
+        
+    
+            var icon_9908f8ebb31bc27bb5b69e8555b94392 = L.AwesomeMarkers.icon(
+                {
+  "markerColor": "blue",
+  "iconColor": "white",
+  "icon": "exclamation-sign",
+  "prefix": "glyphicon",
+  "extraClasses": "fa-rotate-0",
+}
+            );
+        
+    
+        var popup_55d6199eacc093fadd2e6e236d3928fb = L.popup({
+  "maxWidth": 320,
+});
+
+        
+            
+                var html_c9f6226ee4d9370fcfba4b3acd038a47 = $(`<div id="html_c9f6226ee4d9370fcfba4b3acd038a47" style="width: 100.0%; height: 100.0%;">         <div style="font-family: Arial; width: 280px;">             <h4 style="margin-bottom: 10px;">📍 신고 #8</h4>             <hr style="margin: 5px 0;">             <p><b>위험도:</b> Level 3 (주의)</p>             <p><b>긴급도:</b> 2</p>             <p><b>시간:</b> 2025-10-30 23:04</p>             <p><b>위치:</b> 위도: 37.778060, 경도: 126.760360</p>                          <p><b>행정동:</b> 금촌3동</p>             <p><b>생활인구:</b> 15,412명</p>             <p><b>군집 반경:</b> 0.53km</p>         </div>         </div>`)[0];
+                popup_55d6199eacc093fadd2e6e236d3928fb.setContent(html_c9f6226ee4d9370fcfba4b3acd038a47);
+            
+        
+
+        marker_17c76f8498947af47de4496f92a3a151.bindPopup(popup_55d6199eacc093fadd2e6e236d3928fb)
+        ;
+
+        
+    
+    
+                marker_17c76f8498947af47de4496f92a3a151.setIcon(icon_9908f8ebb31bc27bb5b69e8555b94392);
+            
+    
+            var marker_5613512e850af8ee974522f250cf9dd9 = L.marker(
+                [37.79784, 126.79092],
+                {
+}
+            ).addTo(map_08b7d57984f7604dfda2d2c8e942c5f0);
+        
+    
+            var icon_1717b25e536e6a94c4b0cea28efe5d8a = L.AwesomeMarkers.icon(
+                {
+  "markerColor": "blue",
+  "iconColor": "white",
+  "icon": "exclamation-sign",
+  "prefix": "glyphicon",
+  "extraClasses": "fa-rotate-0",
+}
+            );
+        
+    
+        var popup_93d94acdd56b23ad6bbdffd8bdafaf9e = L.popup({
+  "maxWidth": 320,
+});
+
+        
+            
+                var html_572358a2f5d30cd9f671210d1d017129 = $(`<div id="html_572358a2f5d30cd9f671210d1d017129" style="width: 100.0%; height: 100.0%;">         <div style="font-family: Arial; width: 280px;">             <h4 style="margin-bottom: 10px;">📍 신고 #9</h4>             <hr style="margin: 5px 0;">             <p><b>위험도:</b> Level 3 (주의)</p>             <p><b>긴급도:</b> 3</p>             <p><b>시간:</b> 2025-10-30 23:04</p>             <p><b>위치:</b> 위도: 37.797840, 경도: 126.790920</p>                          <p><b>행정동:</b> 월롱면</p>             <p><b>생활인구:</b> 3,463명</p>             <p><b>군집 반경:</b> 0.91km</p>         </div>         </div>`)[0];
+                popup_93d94acdd56b23ad6bbdffd8bdafaf9e.setContent(html_572358a2f5d30cd9f671210d1d017129);
+            
+        
+
+        marker_5613512e850af8ee974522f250cf9dd9.bindPopup(popup_93d94acdd56b23ad6bbdffd8bdafaf9e)
+        ;
+
+        
+    
+    
+                marker_5613512e850af8ee974522f250cf9dd9.setIcon(icon_1717b25e536e6a94c4b0cea28efe5d8a);
+            
+    
+            var marker_aecf76c797b64ddd864123caa04e3b83 = L.marker(
+                [37.736994, 126.7832586],
+                {
+}
+            ).addTo(map_08b7d57984f7604dfda2d2c8e942c5f0);
+        
+    
+            var icon_73bb5dfbb8b04eef7b1450ea0519fef4 = L.AwesomeMarkers.icon(
+                {
+  "markerColor": "red",
+  "iconColor": "white",
+  "icon": "record",
+  "prefix": "glyphicon",
+  "extraClasses": "fa-rotate-0",
+}
+            );
+        
+    
+        var popup_14cbbabf7a6db8541c86ee8e54486587 = L.popup({
+  "maxWidth": 320,
+});
+
+        
+            
+                var html_00fb5a3fe76a86fdac4134a0f40d502b = $(`<div id="html_00fb5a3fe76a86fdac4134a0f40d502b" style="width: 100.0%; height: 100.0%;">         <div style="font-family: Arial; width: 280px;">             <h4 style="margin-bottom: 10px;">📍 신고 #10</h4>             <hr style="margin: 5px 0;">             <p><b>위험도:</b> 단독 (긴급도 5)</p>             <p><b>긴급도:</b> 5</p>             <p><b>시간:</b> 2025-10-30 23:04</p>             <p><b>위치:</b> 위도: 37.736994, 경도: 126.783259</p>                          <p><b>행정동:</b> 금촌2동</p>             <p><b>생활인구:</b> 23,242명</p>             <p><b>군집 반경:</b> 0.42km</p>         </div>         </div>`)[0];
+                popup_14cbbabf7a6db8541c86ee8e54486587.setContent(html_00fb5a3fe76a86fdac4134a0f40d502b);
+            
+        
+
+        marker_aecf76c797b64ddd864123caa04e3b83.bindPopup(popup_14cbbabf7a6db8541c86ee8e54486587)
+        ;
+
+        
+    
+    
+                marker_aecf76c797b64ddd864123caa04e3b83.setIcon(icon_73bb5dfbb8b04eef7b1450ea0519fef4);
+            
+    
+            var marker_7169c12357942fd89281fc9a1fb145d5 = L.marker(
+                [37.698616, 126.8489075],
+                {
+}
+            ).addTo(map_08b7d57984f7604dfda2d2c8e942c5f0);
+        
+    
+            var icon_5e2820d3eeb62f9a3034b2a87e7366dc = L.AwesomeMarkers.icon(
+                {
+  "markerColor": "blue",
+  "iconColor": "white",
+  "icon": "exclamation-sign",
+  "prefix": "glyphicon",
+  "extraClasses": "fa-rotate-0",
+}
+            );
+        
+    
+        var popup_5251ab34402550de014c6cc6f09d9137 = L.popup({
+  "maxWidth": 320,
+});
+
+        
+            
+                var html_b879fb36b640e513619c148a31d8f377 = $(`<div id="html_b879fb36b640e513619c148a31d8f377" style="width: 100.0%; height: 100.0%;">         <div style="font-family: Arial; width: 280px;">             <h4 style="margin-bottom: 10px;">📍 신고 #11</h4>             <hr style="margin: 5px 0;">             <p><b>위험도:</b> Level 3 (주의)</p>             <p><b>긴급도:</b> 4</p>             <p><b>시간:</b> 2025-10-30 23:04</p>             <p><b>위치:</b> 위도: 37.698616, 경도: 126.848907</p>                          <p><b>행정동:</b> 조리읍</p>             <p><b>생활인구:</b> 18,058명</p>             <p><b>군집 반경:</b> 0.49km</p>         </div>         </div>`)[0];
+                popup_5251ab34402550de014c6cc6f09d9137.setContent(html_b879fb36b640e513619c148a31d8f377);
+            
+        
+
+        marker_7169c12357942fd89281fc9a1fb145d5.bindPopup(popup_5251ab34402550de014c6cc6f09d9137)
+        ;
+
+        
+    
+    
+                marker_7169c12357942fd89281fc9a1fb145d5.setIcon(icon_5e2820d3eeb62f9a3034b2a87e7366dc);
+            
+    
+            var marker_8af01af495b4c5df8b4989f681e398ba = L.marker(
+                [37.7518795, 126.7507752],
+                {
+}
+            ).addTo(map_08b7d57984f7604dfda2d2c8e942c5f0);
+        
+    
+            var icon_41861a4c0646ca86f41063eb3c73da3f = L.AwesomeMarkers.icon(
+                {
+  "markerColor": "blue",
+  "iconColor": "white",
+  "icon": "record",
+  "prefix": "glyphicon",
+  "extraClasses": "fa-rotate-0",
+}
+            );
+        
+    
+        var popup_0df630e293ee62f1f41a25c312bee712 = L.popup({
+  "maxWidth": 320,
+});
+
+        
+            
+                var html_9bafbe146e8da0207c4e0e4d26c1abc1 = $(`<div id="html_9bafbe146e8da0207c4e0e4d26c1abc1" style="width: 100.0%; height: 100.0%;">         <div style="font-family: Arial; width: 280px;">             <h4 style="margin-bottom: 10px;">📍 신고 #12</h4>             <hr style="margin: 5px 0;">             <p><b>위험도:</b> 단독 (긴급도 3)</p>             <p><b>긴급도:</b> 3</p>             <p><b>시간:</b> 2025-10-30 23:04</p>             <p><b>위치:</b> 위도: 37.751880, 경도: 126.750775</p>                          <p><b>행정동:</b> 교하동</p>             <p><b>생활인구:</b> 10,649명</p>             <p><b>군집 반경:</b> 0.62km</p>         </div>         </div>`)[0];
+                popup_0df630e293ee62f1f41a25c312bee712.setContent(html_9bafbe146e8da0207c4e0e4d26c1abc1);
+            
+        
+
+        marker_8af01af495b4c5df8b4989f681e398ba.bindPopup(popup_0df630e293ee62f1f41a25c312bee712)
+        ;
+
+        
+    
+    
+                marker_8af01af495b4c5df8b4989f681e398ba.setIcon(icon_41861a4c0646ca86f41063eb3c73da3f);
+            
+    
+            var marker_8435a6ee0bf76d32c0bd14d73cb2abb2 = L.marker(
+                [37.7500689, 126.7984614],
+                {
+}
+            ).addTo(map_08b7d57984f7604dfda2d2c8e942c5f0);
+        
+    
+            var icon_aaa4119111d36ea69f9f34c088d1bf6e = L.AwesomeMarkers.icon(
+                {
+  "markerColor": "red",
+  "iconColor": "white",
+  "icon": "fire",
+  "prefix": "glyphicon",
+  "extraClasses": "fa-rotate-0",
+}
+            );
+        
+    
+        var popup_6b0b07a0d39b0f22685cda3d54c7ad2d = L.popup({
+  "maxWidth": 320,
+});
+
+        
+            
+                var html_abd08d54101fc4b185fabf75d871ba93 = $(`<div id="html_abd08d54101fc4b185fabf75d871ba93" style="width: 100.0%; height: 100.0%;">         <div style="font-family: Arial; width: 280px;">             <h4 style="margin-bottom: 10px;">📍 신고 #13</h4>             <hr style="margin: 5px 0;">             <p><b>위험도:</b> Level 4 (경고)</p>             <p><b>긴급도:</b> 5</p>             <p><b>시간:</b> 2025-10-30 23:04</p>             <p><b>위치:</b> 위도: 37.750069, 경도: 126.798461</p>                          <p><b>행정동:</b> 조리읍</p>             <p><b>생활인구:</b> 18,058명</p>             <p><b>군집 반경:</b> 0.49km</p>         </div>         </div>`)[0];
+                popup_6b0b07a0d39b0f22685cda3d54c7ad2d.setContent(html_abd08d54101fc4b185fabf75d871ba93);
+            
+        
+
+        marker_8435a6ee0bf76d32c0bd14d73cb2abb2.bindPopup(popup_6b0b07a0d39b0f22685cda3d54c7ad2d)
+        ;
+
+        
+    
+    
+                marker_8435a6ee0bf76d32c0bd14d73cb2abb2.setIcon(icon_aaa4119111d36ea69f9f34c088d1bf6e);
+            
+    
+            var marker_60d2aca673611a31b7c77b97c95d8de8 = L.marker(
+                [37.7500689, 126.7984614],
+                {
+}
+            ).addTo(map_08b7d57984f7604dfda2d2c8e942c5f0);
+        
+    
+            var icon_1b6152ed8685af9ba4f2bb575055cd95 = L.AwesomeMarkers.icon(
+                {
+  "markerColor": "red",
+  "iconColor": "white",
+  "icon": "fire",
+  "prefix": "glyphicon",
+  "extraClasses": "fa-rotate-0",
+}
+            );
+        
+    
+        var popup_e220085300d5e806fd181e96cbf1a3d5 = L.popup({
+  "maxWidth": 320,
+});
+
+        
+            
+                var html_0866a986ac8a66d2c9a1611b9e6e5c57 = $(`<div id="html_0866a986ac8a66d2c9a1611b9e6e5c57" style="width: 100.0%; height: 100.0%;">         <div style="font-family: Arial; width: 280px;">             <h4 style="margin-bottom: 10px;">📍 신고 #14</h4>             <hr style="margin: 5px 0;">             <p><b>위험도:</b> Level 4 (경고)</p>             <p><b>긴급도:</b> 2</p>             <p><b>시간:</b> 2025-10-30 23:04</p>             <p><b>위치:</b> 위도: 37.750069, 경도: 126.798461</p>                          <p><b>행정동:</b> 조리읍</p>             <p><b>생활인구:</b> 18,058명</p>             <p><b>군집 반경:</b> 0.49km</p>         </div>         </div>`)[0];
+                popup_e220085300d5e806fd181e96cbf1a3d5.setContent(html_0866a986ac8a66d2c9a1611b9e6e5c57);
+            
+        
+
+        marker_60d2aca673611a31b7c77b97c95d8de8.bindPopup(popup_e220085300d5e806fd181e96cbf1a3d5)
+        ;
+
+        
+    
+    
+                marker_60d2aca673611a31b7c77b97c95d8de8.setIcon(icon_1b6152ed8685af9ba4f2bb575055cd95);
+            
+    
+            var marker_348a49c711c75f1904e35cf5465e9a55 = L.marker(
+                [37.4445584, 126.4082105],
+                {
+}
+            ).addTo(map_08b7d57984f7604dfda2d2c8e942c5f0);
+        
+    
+            var icon_a598d75622c84cd6aa9d1133739e8d5b = L.AwesomeMarkers.icon(
+                {
+  "markerColor": "red",
+  "iconColor": "white",
+  "icon": "record",
+  "prefix": "glyphicon",
+  "extraClasses": "fa-rotate-0",
+}
+            );
+        
+    
+        var popup_2155438563d87171859a84c552944a1f = L.popup({
+  "maxWidth": 320,
+});
+
+        
+            
+                var html_13cf3962b3ff16fce067d662d18b62af = $(`<div id="html_13cf3962b3ff16fce067d662d18b62af" style="width: 100.0%; height: 100.0%;">         <div style="font-family: Arial; width: 280px;">             <h4 style="margin-bottom: 10px;">📍 신고 #15</h4>             <hr style="margin: 5px 0;">             <p><b>위험도:</b> 단독 (긴급도 4)</p>             <p><b>긴급도:</b> 4</p>             <p><b>시간:</b> 2025-10-30 23:04</p>             <p><b>위치:</b> 위도: 37.444558, 경도: 126.408210</p>                          <p><b>행정동:</b> 운정6동</p>             <p><b>생활인구:</b> 16,859명</p>             <p><b>군집 반경:</b> 0.5km</p>         </div>         </div>`)[0];
+                popup_2155438563d87171859a84c552944a1f.setContent(html_13cf3962b3ff16fce067d662d18b62af);
+            
+        
+
+        marker_348a49c711c75f1904e35cf5465e9a55.bindPopup(popup_2155438563d87171859a84c552944a1f)
+        ;
+
+        
+    
+    
+                marker_348a49c711c75f1904e35cf5465e9a55.setIcon(icon_a598d75622c84cd6aa9d1133739e8d5b);
+            
+    
+            var marker_eef1f121de647a8820079c3cb90967da = L.marker(
+                [37.7452203, 126.8043801],
+                {
+}
+            ).addTo(map_08b7d57984f7604dfda2d2c8e942c5f0);
+        
+    
+            var icon_9024871aa0dc715704b3b0634e95066d = L.AwesomeMarkers.icon(
+                {
+  "markerColor": "blue",
+  "iconColor": "white",
+  "icon": "record",
+  "prefix": "glyphicon",
+  "extraClasses": "fa-rotate-0",
+}
+            );
+        
+    
+        var popup_512bc657b8b7c696508567b3cd8b1be8 = L.popup({
+  "maxWidth": 320,
+});
+
+        
+            
+                var html_223580341abed35d28c12e442b50acd8 = $(`<div id="html_223580341abed35d28c12e442b50acd8" style="width: 100.0%; height: 100.0%;">         <div style="font-family: Arial; width: 280px;">             <h4 style="margin-bottom: 10px;">📍 신고 #16</h4>             <hr style="margin: 5px 0;">             <p><b>위험도:</b> 단독 (긴급도 1)</p>             <p><b>긴급도:</b> 1</p>             <p><b>시간:</b> 2025-10-30 23:04</p>             <p><b>위치:</b> 위도: 37.745220, 경도: 126.804380</p>                          <p><b>행정동:</b> 조리읍</p>             <p><b>생활인구:</b> 18,058명</p>             <p><b>군집 반경:</b> 0.49km</p>         </div>         </div>`)[0];
+                popup_512bc657b8b7c696508567b3cd8b1be8.setContent(html_223580341abed35d28c12e442b50acd8);
+            
+        
+
+        marker_eef1f121de647a8820079c3cb90967da.bindPopup(popup_512bc657b8b7c696508567b3cd8b1be8)
+        ;
+
+        
+    
+    
+                marker_eef1f121de647a8820079c3cb90967da.setIcon(icon_9024871aa0dc715704b3b0634e95066d);
+            
+    
+            var marker_917ebfee2cfa7c53a29ee8538be2f7ab = L.marker(
+                [37.7636628, 126.78837],
+                {
+}
+            ).addTo(map_08b7d57984f7604dfda2d2c8e942c5f0);
+        
+    
+            var icon_943e8d6647ad81dc9f781d25cdc92161 = L.AwesomeMarkers.icon(
+                {
+  "markerColor": "blue",
+  "iconColor": "white",
+  "icon": "record",
+  "prefix": "glyphicon",
+  "extraClasses": "fa-rotate-0",
+}
+            );
+        
+    
+        var popup_d80fa6e9dc1f374ca529879ef67f4c44 = L.popup({
+  "maxWidth": 320,
+});
+
+        
+            
+                var html_3779c1d7e3afe40762b2e3488e1664ae = $(`<div id="html_3779c1d7e3afe40762b2e3488e1664ae" style="width: 100.0%; height: 100.0%;">         <div style="font-family: Arial; width: 280px;">             <h4 style="margin-bottom: 10px;">📍 신고 #17</h4>             <hr style="margin: 5px 0;">             <p><b>위험도:</b> 단독 (긴급도 2)</p>             <p><b>긴급도:</b> 2</p>             <p><b>시간:</b> 2025-10-30 23:04</p>             <p><b>위치:</b> 위도: 37.763663, 경도: 126.788370</p>                          <p><b>행정동:</b> 금촌1동</p>             <p><b>생활인구:</b> 21,338명</p>             <p><b>군집 반경:</b> 0.44km</p>         </div>         </div>`)[0];
+                popup_d80fa6e9dc1f374ca529879ef67f4c44.setContent(html_3779c1d7e3afe40762b2e3488e1664ae);
+            
+        
+
+        marker_917ebfee2cfa7c53a29ee8538be2f7ab.bindPopup(popup_d80fa6e9dc1f374ca529879ef67f4c44)
+        ;
+
+        
+    
+    
+                marker_917ebfee2cfa7c53a29ee8538be2f7ab.setIcon(icon_943e8d6647ad81dc9f781d25cdc92161);
+            
+    
+            var marker_861ba838c78a3b24acfed8795efa6cbf = L.marker(
+                [37.5343094, 126.8938445],
+                {
+}
+            ).addTo(map_08b7d57984f7604dfda2d2c8e942c5f0);
+        
+    
+            var icon_499fd7192397b320639790b6cf83faf3 = L.AwesomeMarkers.icon(
+                {
+  "markerColor": "blue",
+  "iconColor": "white",
+  "icon": "record",
+  "prefix": "glyphicon",
+  "extraClasses": "fa-rotate-0",
+}
+            );
+        
+    
+        var popup_c1a6fb11646a371a7837f3703a7d4bdd = L.popup({
+  "maxWidth": 320,
+});
+
+        
+            
+                var html_f22c2b83ef785a4a4aca79c713b82c65 = $(`<div id="html_f22c2b83ef785a4a4aca79c713b82c65" style="width: 100.0%; height: 100.0%;">         <div style="font-family: Arial; width: 280px;">             <h4 style="margin-bottom: 10px;">📍 신고 #18</h4>             <hr style="margin: 5px 0;">             <p><b>위험도:</b> 단독 (긴급도 1)</p>             <p><b>긴급도:</b> 1</p>             <p><b>시간:</b> 2025-10-30 23:04</p>             <p><b>위치:</b> 위도: 37.534309, 경도: 126.893845</p>                          <p><b>행정동:</b> 운정4동</p>             <p><b>생활인구:</b> 20,939명</p>             <p><b>군집 반경:</b> 0.45km</p>         </div>         </div>`)[0];
+                popup_c1a6fb11646a371a7837f3703a7d4bdd.setContent(html_f22c2b83ef785a4a4aca79c713b82c65);
+            
+        
+
+        marker_861ba838c78a3b24acfed8795efa6cbf.bindPopup(popup_c1a6fb11646a371a7837f3703a7d4bdd)
+        ;
+
+        
+    
+    
+                marker_861ba838c78a3b24acfed8795efa6cbf.setIcon(icon_499fd7192397b320639790b6cf83faf3);
+            
+    
+            var marker_5ff8991f54967dd2e68f1a098a67fb6f = L.marker(
+                [33.4336303, 126.4202149],
+                {
+}
+            ).addTo(map_08b7d57984f7604dfda2d2c8e942c5f0);
+        
+    
+            var icon_b2a0d45486d0868bdf1b1e77c905bced = L.AwesomeMarkers.icon(
+                {
+  "markerColor": "blue",
+  "iconColor": "white",
+  "icon": "record",
+  "prefix": "glyphicon",
+  "extraClasses": "fa-rotate-0",
+}
+            );
+        
+    
+        var popup_3271199789e0dee3879e8b289ffee31b = L.popup({
+  "maxWidth": 320,
+});
+
+        
+            
+                var html_1616b359408fe876f484b4bd5322f82a = $(`<div id="html_1616b359408fe876f484b4bd5322f82a" style="width: 100.0%; height: 100.0%;">         <div style="font-family: Arial; width: 280px;">             <h4 style="margin-bottom: 10px;">📍 신고 #19</h4>             <hr style="margin: 5px 0;">             <p><b>위험도:</b> 단독 (긴급도 3)</p>             <p><b>긴급도:</b> 3</p>             <p><b>시간:</b> 2025-10-30 23:04</p>             <p><b>위치:</b> 위도: 33.433630, 경도: 126.420215</p>                          <p><b>행정동:</b> 운정6동</p>             <p><b>생활인구:</b> 16,859명</p>             <p><b>군집 반경:</b> 0.5km</p>         </div>         </div>`)[0];
+                popup_3271199789e0dee3879e8b289ffee31b.setContent(html_1616b359408fe876f484b4bd5322f82a);
+            
+        
+
+        marker_5ff8991f54967dd2e68f1a098a67fb6f.bindPopup(popup_3271199789e0dee3879e8b289ffee31b)
+        ;
+
+        
+    
+    
+                marker_5ff8991f54967dd2e68f1a098a67fb6f.setIcon(icon_b2a0d45486d0868bdf1b1e77c905bced);
+            
+    
+            var marker_5292915e8fd82849e89710cfed00f644 = L.marker(
+                [37.8045102, 126.7382898],
+                {
+}
+            ).addTo(map_08b7d57984f7604dfda2d2c8e942c5f0);
+        
+    
+            var icon_94db90a0f21d9dd7cecd823454ae4c14 = L.AwesomeMarkers.icon(
+                {
+  "markerColor": "red",
+  "iconColor": "white",
+  "icon": "record",
+  "prefix": "glyphicon",
+  "extraClasses": "fa-rotate-0",
+}
+            );
+        
+    
+        var popup_b972f32678bf45f040ff6f6386ec49a8 = L.popup({
+  "maxWidth": 320,
+});
+
+        
+            
+                var html_b130f4d844e864a3263290cbd382e8cc = $(`<div id="html_b130f4d844e864a3263290cbd382e8cc" style="width: 100.0%; height: 100.0%;">         <div style="font-family: Arial; width: 280px;">             <h4 style="margin-bottom: 10px;">📍 신고 #20</h4>             <hr style="margin: 5px 0;">             <p><b>위험도:</b> 단독 (긴급도 5)</p>             <p><b>긴급도:</b> 5</p>             <p><b>시간:</b> 2025-10-30 23:04</p>             <p><b>위치:</b> 위도: 37.804510, 경도: 126.738290</p>                          <p><b>행정동:</b> 탄현면</p>             <p><b>생활인구:</b> 6,336명</p>             <p><b>군집 반경:</b> 0.76km</p>         </div>         </div>`)[0];
+                popup_b972f32678bf45f040ff6f6386ec49a8.setContent(html_b130f4d844e864a3263290cbd382e8cc);
+            
+        
+
+        marker_5292915e8fd82849e89710cfed00f644.bindPopup(popup_b972f32678bf45f040ff6f6386ec49a8)
+        ;
+
+        
+    
+    
+                marker_5292915e8fd82849e89710cfed00f644.setIcon(icon_94db90a0f21d9dd7cecd823454ae4c14);
+            
+    
+            var marker_d5451c4cf92ccbeffd436a5c7f1c9a81 = L.marker(
+                [37.7820902, 126.7290968],
+                {
+}
+            ).addTo(map_08b7d57984f7604dfda2d2c8e942c5f0);
+        
+    
+            var icon_dbf9f7abc72e60d0bb2cc6958982d11b = L.AwesomeMarkers.icon(
+                {
+  "markerColor": "blue",
+  "iconColor": "white",
+  "icon": "record",
+  "prefix": "glyphicon",
+  "extraClasses": "fa-rotate-0",
+}
+            );
+        
+    
+        var popup_3680ac7041b2a8c4a18397db45537bbf = L.popup({
+  "maxWidth": 320,
+});
+
+        
+            
+                var html_b6158f0f0dfaf05c5c52388771858ca0 = $(`<div id="html_b6158f0f0dfaf05c5c52388771858ca0" style="width: 100.0%; height: 100.0%;">         <div style="font-family: Arial; width: 280px;">             <h4 style="margin-bottom: 10px;">📍 신고 #21</h4>             <hr style="margin: 5px 0;">             <p><b>위험도:</b> 단독 (긴급도 3)</p>             <p><b>긴급도:</b> 3</p>             <p><b>시간:</b> 2025-10-30 23:04</p>             <p><b>위치:</b> 위도: 37.782090, 경도: 126.729097</p>                          <p><b>행정동:</b> 탄현면</p>             <p><b>생활인구:</b> 6,336명</p>             <p><b>군집 반경:</b> 0.76km</p>         </div>         </div>`)[0];
+                popup_3680ac7041b2a8c4a18397db45537bbf.setContent(html_b6158f0f0dfaf05c5c52388771858ca0);
+            
+        
+
+        marker_d5451c4cf92ccbeffd436a5c7f1c9a81.bindPopup(popup_3680ac7041b2a8c4a18397db45537bbf)
+        ;
+
+        
+    
+    
+                marker_d5451c4cf92ccbeffd436a5c7f1c9a81.setIcon(icon_dbf9f7abc72e60d0bb2cc6958982d11b);
+            
+    
+            var marker_87b53c945a8b3dc72daa147a733e64ac = L.marker(
+                [37.7759001, 126.8379211],
+                {
+}
+            ).addTo(map_08b7d57984f7604dfda2d2c8e942c5f0);
+        
+    
+            var icon_c4088a1f4a7a489751e625e0b2744d45 = L.AwesomeMarkers.icon(
+                {
+  "markerColor": "red",
+  "iconColor": "white",
+  "icon": "record",
+  "prefix": "glyphicon",
+  "extraClasses": "fa-rotate-0",
+}
+            );
+        
+    
+        var popup_0bee6bd2c97bdb955034cc2e0757bc1f = L.popup({
+  "maxWidth": 320,
+});
+
+        
+            
+                var html_99ed3fd45f94ce5565de584fcedb7436 = $(`<div id="html_99ed3fd45f94ce5565de584fcedb7436" style="width: 100.0%; height: 100.0%;">         <div style="font-family: Arial; width: 280px;">             <h4 style="margin-bottom: 10px;">📍 신고 #22</h4>             <hr style="margin: 5px 0;">             <p><b>위험도:</b> 단독 (긴급도 5)</p>             <p><b>긴급도:</b> 5</p>             <p><b>시간:</b> 2025-10-30 23:04</p>             <p><b>위치:</b> 위도: 37.775900, 경도: 126.837921</p>                          <p><b>행정동:</b> 광탄면</p>             <p><b>생활인구:</b> 2,575명</p>             <p><b>군집 반경:</b> 0.99km</p>         </div>         </div>`)[0];
+                popup_0bee6bd2c97bdb955034cc2e0757bc1f.setContent(html_99ed3fd45f94ce5565de584fcedb7436);
+            
+        
+
+        marker_87b53c945a8b3dc72daa147a733e64ac.bindPopup(popup_0bee6bd2c97bdb955034cc2e0757bc1f)
+        ;
+
+        
+    
+    
+                marker_87b53c945a8b3dc72daa147a733e64ac.setIcon(icon_c4088a1f4a7a489751e625e0b2744d45);
+            
+    
+            var marker_ef4f0b2cda89f610fd24335b061518ec = L.marker(
+                [37.80919, 126.71015],
+                {
+}
+            ).addTo(map_08b7d57984f7604dfda2d2c8e942c5f0);
+        
+    
+            var icon_bb4d09b01ea00d45fd9957b2b052313f = L.AwesomeMarkers.icon(
+                {
+  "markerColor": "blue",
+  "iconColor": "white",
+  "icon": "record",
+  "prefix": "glyphicon",
+  "extraClasses": "fa-rotate-0",
+}
+            );
+        
+    
+        var popup_bef272a0c95340dede2efa0d0e6012b2 = L.popup({
+  "maxWidth": 320,
+});
+
+        
+            
+                var html_5bd98ce3effbc42602bdeb51faf0b022 = $(`<div id="html_5bd98ce3effbc42602bdeb51faf0b022" style="width: 100.0%; height: 100.0%;">         <div style="font-family: Arial; width: 280px;">             <h4 style="margin-bottom: 10px;">📍 신고 #23</h4>             <hr style="margin: 5px 0;">             <p><b>위험도:</b> 단독 (긴급도 2)</p>             <p><b>긴급도:</b> 2</p>             <p><b>시간:</b> 2025-10-30 23:04</p>             <p><b>위치:</b> 위도: 37.809190, 경도: 126.710150</p>                          <p><b>행정동:</b> 탄현면</p>             <p><b>생활인구:</b> 6,336명</p>             <p><b>군집 반경:</b> 0.76km</p>         </div>         </div>`)[0];
+                popup_bef272a0c95340dede2efa0d0e6012b2.setContent(html_5bd98ce3effbc42602bdeb51faf0b022);
+            
+        
+
+        marker_ef4f0b2cda89f610fd24335b061518ec.bindPopup(popup_bef272a0c95340dede2efa0d0e6012b2)
+        ;
+
+        
+    
+    
+                marker_ef4f0b2cda89f610fd24335b061518ec.setIcon(icon_bb4d09b01ea00d45fd9957b2b052313f);
+            
+    
+            var marker_c1fb9009bc1d8a9fc199a5b51bce1b43 = L.marker(
+                [37.6580922, 126.6128547],
+                {
+}
+            ).addTo(map_08b7d57984f7604dfda2d2c8e942c5f0);
+        
+    
+            var icon_ee873263e20766884b4cbd34559177bd = L.AwesomeMarkers.icon(
+                {
+  "markerColor": "red",
+  "iconColor": "white",
+  "icon": "fire",
+  "prefix": "glyphicon",
+  "extraClasses": "fa-rotate-0",
+}
+            );
+        
+    
+        var popup_1c65d79efa6e300f8986106d01c3dd6a = L.popup({
+  "maxWidth": 320,
+});
+
+        
+            
+                var html_33cfe695cda0ae4de12408891e9eaaff = $(`<div id="html_33cfe695cda0ae4de12408891e9eaaff" style="width: 100.0%; height: 100.0%;">         <div style="font-family: Arial; width: 280px;">             <h4 style="margin-bottom: 10px;">📍 신고 #24</h4>             <hr style="margin: 5px 0;">             <p><b>위험도:</b> Level 4 (경고)</p>             <p><b>긴급도:</b> 3</p>             <p><b>시간:</b> 2025-10-30 23:04</p>             <p><b>위치:</b> 위도: 37.658092, 경도: 126.612855</p>                          <p><b>행정동:</b> 운정5동</p>             <p><b>생활인구:</b> 31,802명</p>             <p><b>군집 반경:</b> 0.34km</p>         </div>         </div>`)[0];
+                popup_1c65d79efa6e300f8986106d01c3dd6a.setContent(html_33cfe695cda0ae4de12408891e9eaaff);
+            
+        
+
+        marker_c1fb9009bc1d8a9fc199a5b51bce1b43.bindPopup(popup_1c65d79efa6e300f8986106d01c3dd6a)
+        ;
+
+        
+    
+    
+                marker_c1fb9009bc1d8a9fc199a5b51bce1b43.setIcon(icon_ee873263e20766884b4cbd34559177bd);
+            
+    
+            var marker_2dbeaa6c1ed57fea845bfd5a087d20b3 = L.marker(
+                [37.7953043, 126.782902],
+                {
+}
+            ).addTo(map_08b7d57984f7604dfda2d2c8e942c5f0);
+        
+    
+            var icon_9a89ddebf94edc5b2d1b7a152e2373b8 = L.AwesomeMarkers.icon(
+                {
+  "markerColor": "blue",
+  "iconColor": "white",
+  "icon": "exclamation-sign",
+  "prefix": "glyphicon",
+  "extraClasses": "fa-rotate-0",
+}
+            );
+        
+    
+        var popup_3f7aeb6f2e6e7278d7b429a2ecfe7c9d = L.popup({
+  "maxWidth": 320,
+});
+
+        
+            
+                var html_f9405f8a026e7e090aa80b3b5751861d = $(`<div id="html_f9405f8a026e7e090aa80b3b5751861d" style="width: 100.0%; height: 100.0%;">         <div style="font-family: Arial; width: 280px;">             <h4 style="margin-bottom: 10px;">📍 신고 #25</h4>             <hr style="margin: 5px 0;">             <p><b>위험도:</b> Level 3 (주의)</p>             <p><b>긴급도:</b> 4</p>             <p><b>시간:</b> 2025-10-30 23:04</p>             <p><b>위치:</b> 위도: 37.795304, 경도: 126.782902</p>                          <p><b>행정동:</b> 월롱면</p>             <p><b>생활인구:</b> 3,463명</p>             <p><b>군집 반경:</b> 0.91km</p>         </div>         </div>`)[0];
+                popup_3f7aeb6f2e6e7278d7b429a2ecfe7c9d.setContent(html_f9405f8a026e7e090aa80b3b5751861d);
+            
+        
+
+        marker_2dbeaa6c1ed57fea845bfd5a087d20b3.bindPopup(popup_3f7aeb6f2e6e7278d7b429a2ecfe7c9d)
+        ;
+
+        
+    
+    
+                marker_2dbeaa6c1ed57fea845bfd5a087d20b3.setIcon(icon_9a89ddebf94edc5b2d1b7a152e2373b8);
+            
+    
+            var marker_110d7e426445d38d20c228e60269823b = L.marker(
+                [37.698616, 126.8489075],
+                {
+}
+            ).addTo(map_08b7d57984f7604dfda2d2c8e942c5f0);
+        
+    
+            var icon_e7ba939181be59302345b5a8a7376ba9 = L.AwesomeMarkers.icon(
+                {
+  "markerColor": "blue",
+  "iconColor": "white",
+  "icon": "exclamation-sign",
+  "prefix": "glyphicon",
+  "extraClasses": "fa-rotate-0",
+}
+            );
+        
+    
+        var popup_7d1201e0f400df7b976176baa84e50b1 = L.popup({
+  "maxWidth": 320,
+});
+
+        
+            
+                var html_4164ec52f2da4f60cf5b7899e76a4efa = $(`<div id="html_4164ec52f2da4f60cf5b7899e76a4efa" style="width: 100.0%; height: 100.0%;">         <div style="font-family: Arial; width: 280px;">             <h4 style="margin-bottom: 10px;">📍 신고 #26</h4>             <hr style="margin: 5px 0;">             <p><b>위험도:</b> Level 3 (주의)</p>             <p><b>긴급도:</b> 4</p>             <p><b>시간:</b> 2025-10-30 23:04</p>             <p><b>위치:</b> 위도: 37.698616, 경도: 126.848907</p>                          <p><b>행정동:</b> 조리읍</p>             <p><b>생활인구:</b> 18,058명</p>             <p><b>군집 반경:</b> 0.49km</p>         </div>         </div>`)[0];
+                popup_7d1201e0f400df7b976176baa84e50b1.setContent(html_4164ec52f2da4f60cf5b7899e76a4efa);
+            
+        
+
+        marker_110d7e426445d38d20c228e60269823b.bindPopup(popup_7d1201e0f400df7b976176baa84e50b1)
+        ;
+
+        
+    
+    
+                marker_110d7e426445d38d20c228e60269823b.setIcon(icon_e7ba939181be59302345b5a8a7376ba9);
+            
+    
+            var marker_8ba56361b9482865b11c152943bcb4f7 = L.marker(
+                [37.7532481, 126.8140871],
+                {
+}
+            ).addTo(map_08b7d57984f7604dfda2d2c8e942c5f0);
+        
+    
+            var icon_e1ffdcf2bccda166d9d691863aeb12fc = L.AwesomeMarkers.icon(
+                {
+  "markerColor": "blue",
+  "iconColor": "white",
+  "icon": "exclamation-sign",
+  "prefix": "glyphicon",
+  "extraClasses": "fa-rotate-0",
+}
+            );
+        
+    
+        var popup_674a9d61cbd3fe472a0e51541999c816 = L.popup({
+  "maxWidth": 320,
+});
+
+        
+            
+                var html_f3006a2645dfa6c54f0927de7e075bf4 = $(`<div id="html_f3006a2645dfa6c54f0927de7e075bf4" style="width: 100.0%; height: 100.0%;">         <div style="font-family: Arial; width: 280px;">             <h4 style="margin-bottom: 10px;">📍 신고 #27</h4>             <hr style="margin: 5px 0;">             <p><b>위험도:</b> Level 3 (주의)</p>             <p><b>긴급도:</b> 5</p>             <p><b>시간:</b> 2025-10-30 23:04</p>             <p><b>위치:</b> 위도: 37.753248, 경도: 126.814087</p>                          <p><b>행정동:</b> 조리읍</p>             <p><b>생활인구:</b> 18,058명</p>             <p><b>군집 반경:</b> 0.49km</p>         </div>         </div>`)[0];
+                popup_674a9d61cbd3fe472a0e51541999c816.setContent(html_f3006a2645dfa6c54f0927de7e075bf4);
+            
+        
+
+        marker_8ba56361b9482865b11c152943bcb4f7.bindPopup(popup_674a9d61cbd3fe472a0e51541999c816)
+        ;
+
+        
+    
+    
+                marker_8ba56361b9482865b11c152943bcb4f7.setIcon(icon_e1ffdcf2bccda166d9d691863aeb12fc);
+            
+    
+            var marker_f66d6a5dabe8c7034caa30f4994f1947 = L.marker(
+                [37.4878028, 126.8689295],
+                {
+}
+            ).addTo(map_08b7d57984f7604dfda2d2c8e942c5f0);
+        
+    
+            var icon_4623d084b82d0198f5b946151bd7907e = L.AwesomeMarkers.icon(
+                {
+  "markerColor": "red",
+  "iconColor": "white",
+  "icon": "record",
+  "prefix": "glyphicon",
+  "extraClasses": "fa-rotate-0",
+}
+            );
+        
+    
+        var popup_b75aa2ea5eddd9f55282fe15928359b8 = L.popup({
+  "maxWidth": 320,
+});
+
+        
+            
+                var html_9781c8a52c34a5d4a27400fa85946fd7 = $(`<div id="html_9781c8a52c34a5d4a27400fa85946fd7" style="width: 100.0%; height: 100.0%;">         <div style="font-family: Arial; width: 280px;">             <h4 style="margin-bottom: 10px;">📍 신고 #28</h4>             <hr style="margin: 5px 0;">             <p><b>위험도:</b> 단독 (긴급도 5)</p>             <p><b>긴급도:</b> 5</p>             <p><b>시간:</b> 2025-10-30 23:04</p>             <p><b>위치:</b> 위도: 37.487803, 경도: 126.868929</p>                          <p><b>행정동:</b> 운정4동</p>             <p><b>생활인구:</b> 20,939명</p>             <p><b>군집 반경:</b> 0.45km</p>         </div>         </div>`)[0];
+                popup_b75aa2ea5eddd9f55282fe15928359b8.setContent(html_9781c8a52c34a5d4a27400fa85946fd7);
+            
+        
+
+        marker_f66d6a5dabe8c7034caa30f4994f1947.bindPopup(popup_b75aa2ea5eddd9f55282fe15928359b8)
+        ;
+
+        
+    
+    
+                marker_f66d6a5dabe8c7034caa30f4994f1947.setIcon(icon_4623d084b82d0198f5b946151bd7907e);
+            
+    
+            var marker_f9d9cfcc7e2037b749ade79b16d4f989 = L.marker(
+                [37.8030591, 126.7813606],
+                {
+}
+            ).addTo(map_08b7d57984f7604dfda2d2c8e942c5f0);
+        
+    
+            var icon_ab07a3f8d79dfb57fe52a3aa7e347653 = L.AwesomeMarkers.icon(
+                {
+  "markerColor": "blue",
+  "iconColor": "white",
+  "icon": "info-sign",
+  "prefix": "glyphicon",
+  "extraClasses": "fa-rotate-0",
+}
+            );
+        
+    
+        var popup_af0798150b96b8529bd1cf54663df37d = L.popup({
+  "maxWidth": 320,
+});
+
+        
+            
+                var html_bfc6cbdb5a16b3a3dcf88b5b808450d5 = $(`<div id="html_bfc6cbdb5a16b3a3dcf88b5b808450d5" style="width: 100.0%; height: 100.0%;">         <div style="font-family: Arial; width: 280px;">             <h4 style="margin-bottom: 10px;">📍 신고 #29</h4>             <hr style="margin: 5px 0;">             <p><b>위험도:</b> Level 1 (낮음)</p>             <p><b>긴급도:</b> 1</p>             <p><b>시간:</b> 2025-10-30 23:04</p>             <p><b>위치:</b> 위도: 37.803059, 경도: 126.781361</p>                          <p><b>행정동:</b> 월롱면</p>             <p><b>생활인구:</b> 3,463명</p>             <p><b>군집 반경:</b> 0.91km</p>         </div>         </div>`)[0];
+                popup_af0798150b96b8529bd1cf54663df37d.setContent(html_bfc6cbdb5a16b3a3dcf88b5b808450d5);
+            
+        
+
+        marker_f9d9cfcc7e2037b749ade79b16d4f989.bindPopup(popup_af0798150b96b8529bd1cf54663df37d)
+        ;
+
+        
+    
+    
+                marker_f9d9cfcc7e2037b749ade79b16d4f989.setIcon(icon_ab07a3f8d79dfb57fe52a3aa7e347653);
+            
+    
+            var marker_67049b46befd3823b5a82f58db9f8b6d = L.marker(
+                [37.7387735, 126.8199394],
+                {
+}
+            ).addTo(map_08b7d57984f7604dfda2d2c8e942c5f0);
+        
+    
+            var icon_a91350999c7f34aa59f88c72ccf86ad3 = L.AwesomeMarkers.icon(
+                {
+  "markerColor": "blue",
+  "iconColor": "white",
+  "icon": "record",
+  "prefix": "glyphicon",
+  "extraClasses": "fa-rotate-0",
+}
+            );
+        
+    
+        var popup_5fa7c87f0f561574455c517941990f1c = L.popup({
+  "maxWidth": 320,
+});
+
+        
+            
+                var html_58318bff57b8fe7a8daf8e8567cf7e11 = $(`<div id="html_58318bff57b8fe7a8daf8e8567cf7e11" style="width: 100.0%; height: 100.0%;">         <div style="font-family: Arial; width: 280px;">             <h4 style="margin-bottom: 10px;">📍 신고 #30</h4>             <hr style="margin: 5px 0;">             <p><b>위험도:</b> 단독 (긴급도 1)</p>             <p><b>긴급도:</b> 1</p>             <p><b>시간:</b> 2025-10-30 23:04</p>             <p><b>위치:</b> 위도: 37.738774, 경도: 126.819939</p>                          <p><b>행정동:</b> 조리읍</p>             <p><b>생활인구:</b> 18,058명</p>             <p><b>군집 반경:</b> 0.49km</p>         </div>         </div>`)[0];
+                popup_5fa7c87f0f561574455c517941990f1c.setContent(html_58318bff57b8fe7a8daf8e8567cf7e11);
+            
+        
+
+        marker_67049b46befd3823b5a82f58db9f8b6d.bindPopup(popup_5fa7c87f0f561574455c517941990f1c)
+        ;
+
+        
+    
+    
+                marker_67049b46befd3823b5a82f58db9f8b6d.setIcon(icon_a91350999c7f34aa59f88c72ccf86ad3);
+            
+    
+            var marker_7e7cfb99a366a88a5b43fe291a42fb4e = L.marker(
+                [37.7532481, 126.8140871],
+                {
+}
+            ).addTo(map_08b7d57984f7604dfda2d2c8e942c5f0);
+        
+    
+            var icon_5d53dcc6278ebd00e9e44d854ca288f0 = L.AwesomeMarkers.icon(
+                {
+  "markerColor": "blue",
+  "iconColor": "white",
+  "icon": "exclamation-sign",
+  "prefix": "glyphicon",
+  "extraClasses": "fa-rotate-0",
+}
+            );
+        
+    
+        var popup_a34af34d1294b579d6e2f2c945413fd3 = L.popup({
+  "maxWidth": 320,
+});
+
+        
+            
+                var html_011c9c9cc4b16aee1498c75c9839c491 = $(`<div id="html_011c9c9cc4b16aee1498c75c9839c491" style="width: 100.0%; height: 100.0%;">         <div style="font-family: Arial; width: 280px;">             <h4 style="margin-bottom: 10px;">📍 신고 #31</h4>             <hr style="margin: 5px 0;">             <p><b>위험도:</b> Level 3 (주의)</p>             <p><b>긴급도:</b> 1</p>             <p><b>시간:</b> 2025-10-30 23:04</p>             <p><b>위치:</b> 위도: 37.753248, 경도: 126.814087</p>                          <p><b>행정동:</b> 조리읍</p>             <p><b>생활인구:</b> 18,058명</p>             <p><b>군집 반경:</b> 0.49km</p>         </div>         </div>`)[0];
+                popup_a34af34d1294b579d6e2f2c945413fd3.setContent(html_011c9c9cc4b16aee1498c75c9839c491);
+            
+        
+
+        marker_7e7cfb99a366a88a5b43fe291a42fb4e.bindPopup(popup_a34af34d1294b579d6e2f2c945413fd3)
+        ;
+
+        
+    
+    
+                marker_7e7cfb99a366a88a5b43fe291a42fb4e.setIcon(icon_5d53dcc6278ebd00e9e44d854ca288f0);
+            
+    
+            var marker_9fb2ac3bea5ecf9e6881483b4a9ef7e5 = L.marker(
+                [35.2109726, 129.0872833],
+                {
+}
+            ).addTo(map_08b7d57984f7604dfda2d2c8e942c5f0);
+        
+    
+            var icon_af755db9b67b43960119dea57372d3ce = L.AwesomeMarkers.icon(
+                {
+  "markerColor": "blue",
+  "iconColor": "white",
+  "icon": "record",
+  "prefix": "glyphicon",
+  "extraClasses": "fa-rotate-0",
+}
+            );
+        
+    
+        var popup_92fcbcefb7e1a1a86ba24f939444905a = L.popup({
+  "maxWidth": 320,
+});
+
+        
+            
+                var html_59b338b48f88738e364854ccd4406595 = $(`<div id="html_59b338b48f88738e364854ccd4406595" style="width: 100.0%; height: 100.0%;">         <div style="font-family: Arial; width: 280px;">             <h4 style="margin-bottom: 10px;">📍 신고 #32</h4>             <hr style="margin: 5px 0;">             <p><b>위험도:</b> 단독 (긴급도 3)</p>             <p><b>긴급도:</b> 3</p>             <p><b>시간:</b> 2025-10-30 23:04</p>             <p><b>위치:</b> 위도: 35.210973, 경도: 129.087283</p>                          <p><b>행정동:</b> 운정4동</p>             <p><b>생활인구:</b> 20,939명</p>             <p><b>군집 반경:</b> 0.45km</p>         </div>         </div>`)[0];
+                popup_92fcbcefb7e1a1a86ba24f939444905a.setContent(html_59b338b48f88738e364854ccd4406595);
+            
+        
+
+        marker_9fb2ac3bea5ecf9e6881483b4a9ef7e5.bindPopup(popup_92fcbcefb7e1a1a86ba24f939444905a)
+        ;
+
+        
+    
+    
+                marker_9fb2ac3bea5ecf9e6881483b4a9ef7e5.setIcon(icon_af755db9b67b43960119dea57372d3ce);
+            
+    
+            var marker_7639f981b2a0cf6aa5e572c8a68cd79d = L.marker(
+                [35.9252703, 128.4439031],
+                {
+}
+            ).addTo(map_08b7d57984f7604dfda2d2c8e942c5f0);
+        
+    
+            var icon_625931bce21e85ffdbfdc71690b0353e = L.AwesomeMarkers.icon(
+                {
+  "markerColor": "blue",
+  "iconColor": "white",
+  "icon": "record",
+  "prefix": "glyphicon",
+  "extraClasses": "fa-rotate-0",
+}
+            );
+        
+    
+        var popup_a0b66d54a1775cd551221330de6bbf1e = L.popup({
+  "maxWidth": 320,
+});
+
+        
+            
+                var html_41f7f08fae70727cfa1b22b3d663ad8d = $(`<div id="html_41f7f08fae70727cfa1b22b3d663ad8d" style="width: 100.0%; height: 100.0%;">         <div style="font-family: Arial; width: 280px;">             <h4 style="margin-bottom: 10px;">📍 신고 #33</h4>             <hr style="margin: 5px 0;">             <p><b>위험도:</b> 단독 (긴급도 2)</p>             <p><b>긴급도:</b> 2</p>             <p><b>시간:</b> 2025-10-30 23:04</p>             <p><b>위치:</b> 위도: 35.925270, 경도: 128.443903</p>                          <p><b>행정동:</b> 운정4동</p>             <p><b>생활인구:</b> 20,939명</p>             <p><b>군집 반경:</b> 0.45km</p>         </div>         </div>`)[0];
+                popup_a0b66d54a1775cd551221330de6bbf1e.setContent(html_41f7f08fae70727cfa1b22b3d663ad8d);
+            
+        
+
+        marker_7639f981b2a0cf6aa5e572c8a68cd79d.bindPopup(popup_a0b66d54a1775cd551221330de6bbf1e)
+        ;
+
+        
+    
+    
+                marker_7639f981b2a0cf6aa5e572c8a68cd79d.setIcon(icon_625931bce21e85ffdbfdc71690b0353e);
+            
+    
+            var marker_2ce7af8383d0edd88eea7ac01f73d3ca = L.marker(
+                [37.6580922, 126.6128547],
+                {
+}
+            ).addTo(map_08b7d57984f7604dfda2d2c8e942c5f0);
+        
+    
+            var icon_7a23d7842177e77e01878a20f745479b = L.AwesomeMarkers.icon(
+                {
+  "markerColor": "red",
+  "iconColor": "white",
+  "icon": "fire",
+  "prefix": "glyphicon",
+  "extraClasses": "fa-rotate-0",
+}
+            );
+        
+    
+        var popup_1b654c1ab46c185fa5a236f44a94ad80 = L.popup({
+  "maxWidth": 320,
+});
+
+        
+            
+                var html_a44aef911892dd01ba2b4aeebbd2c0a1 = $(`<div id="html_a44aef911892dd01ba2b4aeebbd2c0a1" style="width: 100.0%; height: 100.0%;">         <div style="font-family: Arial; width: 280px;">             <h4 style="margin-bottom: 10px;">📍 신고 #34</h4>             <hr style="margin: 5px 0;">             <p><b>위험도:</b> Level 4 (경고)</p>             <p><b>긴급도:</b> 5</p>             <p><b>시간:</b> 2025-10-30 23:04</p>             <p><b>위치:</b> 위도: 37.658092, 경도: 126.612855</p>                          <p><b>행정동:</b> 운정5동</p>             <p><b>생활인구:</b> 31,802명</p>             <p><b>군집 반경:</b> 0.34km</p>         </div>         </div>`)[0];
+                popup_1b654c1ab46c185fa5a236f44a94ad80.setContent(html_a44aef911892dd01ba2b4aeebbd2c0a1);
+            
+        
+
+        marker_2ce7af8383d0edd88eea7ac01f73d3ca.bindPopup(popup_1b654c1ab46c185fa5a236f44a94ad80)
+        ;
+
+        
+    
+    
+                marker_2ce7af8383d0edd88eea7ac01f73d3ca.setIcon(icon_7a23d7842177e77e01878a20f745479b);
+            
+    
+            var marker_b5e6865a4ca702c6c00d8f4178baf563 = L.marker(
+                [37.602197, 126.9350947],
+                {
+}
+            ).addTo(map_08b7d57984f7604dfda2d2c8e942c5f0);
+        
+    
+            var icon_e94d5183745bd1eafd7e693f3f82701b = L.AwesomeMarkers.icon(
+                {
+  "markerColor": "red",
+  "iconColor": "white",
+  "icon": "record",
+  "prefix": "glyphicon",
+  "extraClasses": "fa-rotate-0",
+}
+            );
+        
+    
+        var popup_9320e3708cc88f8aff84b87610342ac2 = L.popup({
+  "maxWidth": 320,
+});
+
+        
+            
+                var html_27691021c302f977f8dd8136f865313d = $(`<div id="html_27691021c302f977f8dd8136f865313d" style="width: 100.0%; height: 100.0%;">         <div style="font-family: Arial; width: 280px;">             <h4 style="margin-bottom: 10px;">📍 신고 #35</h4>             <hr style="margin: 5px 0;">             <p><b>위험도:</b> 단독 (긴급도 5)</p>             <p><b>긴급도:</b> 5</p>             <p><b>시간:</b> 2025-10-30 23:04</p>             <p><b>위치:</b> 위도: 37.602197, 경도: 126.935095</p>                          <p><b>행정동:</b> 조리읍</p>             <p><b>생활인구:</b> 18,058명</p>             <p><b>군집 반경:</b> 0.49km</p>         </div>         </div>`)[0];
+                popup_9320e3708cc88f8aff84b87610342ac2.setContent(html_27691021c302f977f8dd8136f865313d);
+            
+        
+
+        marker_b5e6865a4ca702c6c00d8f4178baf563.bindPopup(popup_9320e3708cc88f8aff84b87610342ac2)
+        ;
+
+        
+    
+    
+                marker_b5e6865a4ca702c6c00d8f4178baf563.setIcon(icon_e94d5183745bd1eafd7e693f3f82701b);
+            
+    
+            var marker_1b0f9789a03ac00177941942db11df3e = L.marker(
+                [37.7867436, 126.769821],
+                {
+}
+            ).addTo(map_08b7d57984f7604dfda2d2c8e942c5f0);
+        
+    
+            var icon_0d101cedec461da8405be2352b03e892 = L.AwesomeMarkers.icon(
+                {
+  "markerColor": "blue",
+  "iconColor": "white",
+  "icon": "exclamation-sign",
+  "prefix": "glyphicon",
+  "extraClasses": "fa-rotate-0",
+}
+            );
+        
+    
+        var popup_87867cfd6bca9c5f2c8b5640ea3a7b17 = L.popup({
+  "maxWidth": 320,
+});
+
+        
+            
+                var html_be540310cee4aa559da6986e62dc7353 = $(`<div id="html_be540310cee4aa559da6986e62dc7353" style="width: 100.0%; height: 100.0%;">         <div style="font-family: Arial; width: 280px;">             <h4 style="margin-bottom: 10px;">📍 신고 #36</h4>             <hr style="margin: 5px 0;">             <p><b>위험도:</b> Level 3 (주의)</p>             <p><b>긴급도:</b> 2</p>             <p><b>시간:</b> 2025-10-30 23:04</p>             <p><b>위치:</b> 위도: 37.786744, 경도: 126.769821</p>                          <p><b>행정동:</b> 금촌3동</p>             <p><b>생활인구:</b> 15,412명</p>             <p><b>군집 반경:</b> 0.53km</p>         </div>         </div>`)[0];
+                popup_87867cfd6bca9c5f2c8b5640ea3a7b17.setContent(html_be540310cee4aa559da6986e62dc7353);
+            
+        
+
+        marker_1b0f9789a03ac00177941942db11df3e.bindPopup(popup_87867cfd6bca9c5f2c8b5640ea3a7b17)
+        ;
+
+        
+    
+    
+                marker_1b0f9789a03ac00177941942db11df3e.setIcon(icon_0d101cedec461da8405be2352b03e892);
+            
+    
+            var marker_ec9c7d27425fc6fe8b7bfcdf02a10166 = L.marker(
+                [41.4249859, 128.2655533],
+                {
+}
+            ).addTo(map_08b7d57984f7604dfda2d2c8e942c5f0);
+        
+    
+            var icon_876225afb82c660ca0e9aab06610bce4 = L.AwesomeMarkers.icon(
+                {
+  "markerColor": "blue",
+  "iconColor": "white",
+  "icon": "record",
+  "prefix": "glyphicon",
+  "extraClasses": "fa-rotate-0",
+}
+            );
+        
+    
+        var popup_c37ddd30a44d126197c258af05be5d18 = L.popup({
+  "maxWidth": 320,
+});
+
+        
+            
+                var html_389fd743714f6811218e80cef36b3fb6 = $(`<div id="html_389fd743714f6811218e80cef36b3fb6" style="width: 100.0%; height: 100.0%;">         <div style="font-family: Arial; width: 280px;">             <h4 style="margin-bottom: 10px;">📍 신고 #37</h4>             <hr style="margin: 5px 0;">             <p><b>위험도:</b> 단독 (긴급도 2)</p>             <p><b>긴급도:</b> 2</p>             <p><b>시간:</b> 2025-10-30 23:04</p>             <p><b>위치:</b> 위도: 41.424986, 경도: 128.265553</p>                          <p><b>행정동:</b> 적성면</p>             <p><b>생활인구:</b> 915명</p>             <p><b>군집 반경:</b> 1.25km</p>         </div>         </div>`)[0];
+                popup_c37ddd30a44d126197c258af05be5d18.setContent(html_389fd743714f6811218e80cef36b3fb6);
+            
+        
+
+        marker_ec9c7d27425fc6fe8b7bfcdf02a10166.bindPopup(popup_c37ddd30a44d126197c258af05be5d18)
+        ;
+
+        
+    
+    
+                marker_ec9c7d27425fc6fe8b7bfcdf02a10166.setIcon(icon_876225afb82c660ca0e9aab06610bce4);
+            
+    
+            var marker_08449731a3d55168b94bc96e711ca89d = L.marker(
+                [37.7504422, 126.7420463],
+                {
+}
+            ).addTo(map_08b7d57984f7604dfda2d2c8e942c5f0);
+        
+    
+            var icon_5b866da58dc82fdb4c9c865e14cc266b = L.AwesomeMarkers.icon(
+                {
+  "markerColor": "blue",
+  "iconColor": "white",
+  "icon": "record",
+  "prefix": "glyphicon",
+  "extraClasses": "fa-rotate-0",
+}
+            );
+        
+    
+        var popup_babba86e4a196a3c48bad322371aa2a4 = L.popup({
+  "maxWidth": 320,
+});
+
+        
+            
+                var html_ae605a0fd8d78d7f06ec7da07ca86a60 = $(`<div id="html_ae605a0fd8d78d7f06ec7da07ca86a60" style="width: 100.0%; height: 100.0%;">         <div style="font-family: Arial; width: 280px;">             <h4 style="margin-bottom: 10px;">📍 신고 #38</h4>             <hr style="margin: 5px 0;">             <p><b>위험도:</b> 단독 (긴급도 3)</p>             <p><b>긴급도:</b> 3</p>             <p><b>시간:</b> 2025-10-30 23:04</p>             <p><b>위치:</b> 위도: 37.750442, 경도: 126.742046</p>                          <p><b>행정동:</b> 교하동</p>             <p><b>생활인구:</b> 10,649명</p>             <p><b>군집 반경:</b> 0.62km</p>         </div>         </div>`)[0];
+                popup_babba86e4a196a3c48bad322371aa2a4.setContent(html_ae605a0fd8d78d7f06ec7da07ca86a60);
+            
+        
+
+        marker_08449731a3d55168b94bc96e711ca89d.bindPopup(popup_babba86e4a196a3c48bad322371aa2a4)
+        ;
+
+        
+    
+    
+                marker_08449731a3d55168b94bc96e711ca89d.setIcon(icon_5b866da58dc82fdb4c9c865e14cc266b);
+            
+    
+            var marker_1fc4f094b919c6893e7b001637c57ce0 = L.marker(
+                [37.7500689, 126.7984614],
+                {
+}
+            ).addTo(map_08b7d57984f7604dfda2d2c8e942c5f0);
+        
+    
+            var icon_eee413467596371125c034537ee99318 = L.AwesomeMarkers.icon(
+                {
+  "markerColor": "red",
+  "iconColor": "white",
+  "icon": "fire",
+  "prefix": "glyphicon",
+  "extraClasses": "fa-rotate-0",
+}
+            );
+        
+    
+        var popup_7492ad8b313631d53f1b741668a993c1 = L.popup({
+  "maxWidth": 320,
+});
+
+        
+            
+                var html_170ca7c952868fb0543f8da8a86fcc6e = $(`<div id="html_170ca7c952868fb0543f8da8a86fcc6e" style="width: 100.0%; height: 100.0%;">         <div style="font-family: Arial; width: 280px;">             <h4 style="margin-bottom: 10px;">📍 신고 #39</h4>             <hr style="margin: 5px 0;">             <p><b>위험도:</b> Level 4 (경고)</p>             <p><b>긴급도:</b> 5</p>             <p><b>시간:</b> 2025-10-30 23:04</p>             <p><b>위치:</b> 위도: 37.750069, 경도: 126.798461</p>                          <p><b>행정동:</b> 조리읍</p>             <p><b>생활인구:</b> 18,058명</p>             <p><b>군집 반경:</b> 0.49km</p>         </div>         </div>`)[0];
+                popup_7492ad8b313631d53f1b741668a993c1.setContent(html_170ca7c952868fb0543f8da8a86fcc6e);
+            
+        
+
+        marker_1fc4f094b919c6893e7b001637c57ce0.bindPopup(popup_7492ad8b313631d53f1b741668a993c1)
+        ;
+
+        
+    
+    
+                marker_1fc4f094b919c6893e7b001637c57ce0.setIcon(icon_eee413467596371125c034537ee99318);
+            
+    
+            var marker_9f4d7d23c365d280ad191b2aa4e0c86a = L.marker(
+                [37.48183, 126.9518635],
+                {
+}
+            ).addTo(map_08b7d57984f7604dfda2d2c8e942c5f0);
+        
+    
+            var icon_aaa422d573eedc22193365da87610c30 = L.AwesomeMarkers.icon(
+                {
+  "markerColor": "red",
+  "iconColor": "white",
+  "icon": "record",
+  "prefix": "glyphicon",
+  "extraClasses": "fa-rotate-0",
+}
+            );
+        
+    
+        var popup_7d46081353b917381a263d5d0ee51d2a = L.popup({
+  "maxWidth": 320,
+});
+
+        
+            
+                var html_78cbe219f29fe5576abf9307c332c30a = $(`<div id="html_78cbe219f29fe5576abf9307c332c30a" style="width: 100.0%; height: 100.0%;">         <div style="font-family: Arial; width: 280px;">             <h4 style="margin-bottom: 10px;">📍 신고 #40</h4>             <hr style="margin: 5px 0;">             <p><b>위험도:</b> 단독 (긴급도 4)</p>             <p><b>긴급도:</b> 4</p>             <p><b>시간:</b> 2025-10-30 23:04</p>             <p><b>위치:</b> 위도: 37.481830, 경도: 126.951864</p>                          <p><b>행정동:</b> 운정4동</p>             <p><b>생활인구:</b> 20,939명</p>             <p><b>군집 반경:</b> 0.45km</p>         </div>         </div>`)[0];
+                popup_7d46081353b917381a263d5d0ee51d2a.setContent(html_78cbe219f29fe5576abf9307c332c30a);
+            
+        
+
+        marker_9f4d7d23c365d280ad191b2aa4e0c86a.bindPopup(popup_7d46081353b917381a263d5d0ee51d2a)
+        ;
+
+        
+    
+    
+                marker_9f4d7d23c365d280ad191b2aa4e0c86a.setIcon(icon_aaa422d573eedc22193365da87610c30);
+            
+    
+            var marker_a09116acc75fadad64a69c2cc16c177b = L.marker(
+                [37.8115922, 126.8183898],
+                {
+}
+            ).addTo(map_08b7d57984f7604dfda2d2c8e942c5f0);
+        
+    
+            var icon_ce61bfce3f5311a8d2d38ce900d611b3 = L.AwesomeMarkers.icon(
+                {
+  "markerColor": "blue",
+  "iconColor": "white",
+  "icon": "record",
+  "prefix": "glyphicon",
+  "extraClasses": "fa-rotate-0",
+}
+            );
+        
+    
+        var popup_2cd2ec1c0d871b94bfc44762c4592034 = L.popup({
+  "maxWidth": 320,
+});
+
+        
+            
+                var html_0ad834f9ef395b06d8ac33039418c9f9 = $(`<div id="html_0ad834f9ef395b06d8ac33039418c9f9" style="width: 100.0%; height: 100.0%;">         <div style="font-family: Arial; width: 280px;">             <h4 style="margin-bottom: 10px;">📍 신고 #41</h4>             <hr style="margin: 5px 0;">             <p><b>위험도:</b> 단독 (긴급도 1)</p>             <p><b>긴급도:</b> 1</p>             <p><b>시간:</b> 2025-10-30 23:04</p>             <p><b>위치:</b> 위도: 37.811592, 경도: 126.818390</p>                          <p><b>행정동:</b> 파주읍</p>             <p><b>생활인구:</b> 6,572명</p>             <p><b>군집 반경:</b> 0.75km</p>         </div>         </div>`)[0];
+                popup_2cd2ec1c0d871b94bfc44762c4592034.setContent(html_0ad834f9ef395b06d8ac33039418c9f9);
+            
+        
+
+        marker_a09116acc75fadad64a69c2cc16c177b.bindPopup(popup_2cd2ec1c0d871b94bfc44762c4592034)
+        ;
+
+        
+    
+    
+                marker_a09116acc75fadad64a69c2cc16c177b.setIcon(icon_ce61bfce3f5311a8d2d38ce900d611b3);
+            
+    
+            var marker_7d081b0e233fb97bf6a6417aea2b0f57 = L.marker(
+                [37.7500689, 126.7984614],
+                {
+}
+            ).addTo(map_08b7d57984f7604dfda2d2c8e942c5f0);
+        
+    
+            var icon_8c1aa807390c5d473ea0733e79eec4f6 = L.AwesomeMarkers.icon(
+                {
+  "markerColor": "red",
+  "iconColor": "white",
+  "icon": "fire",
+  "prefix": "glyphicon",
+  "extraClasses": "fa-rotate-0",
+}
+            );
+        
+    
+        var popup_25a524802d032602d112aba9a6735844 = L.popup({
+  "maxWidth": 320,
+});
+
+        
+            
+                var html_da5a222ef343d5cc54d2b28acf6a67df = $(`<div id="html_da5a222ef343d5cc54d2b28acf6a67df" style="width: 100.0%; height: 100.0%;">         <div style="font-family: Arial; width: 280px;">             <h4 style="margin-bottom: 10px;">📍 신고 #42</h4>             <hr style="margin: 5px 0;">             <p><b>위험도:</b> Level 4 (경고)</p>             <p><b>긴급도:</b> 1</p>             <p><b>시간:</b> 2025-10-30 23:04</p>             <p><b>위치:</b> 위도: 37.750069, 경도: 126.798461</p>                          <p><b>행정동:</b> 조리읍</p>             <p><b>생활인구:</b> 18,058명</p>             <p><b>군집 반경:</b> 0.49km</p>         </div>         </div>`)[0];
+                popup_25a524802d032602d112aba9a6735844.setContent(html_da5a222ef343d5cc54d2b28acf6a67df);
+            
+        
+
+        marker_7d081b0e233fb97bf6a6417aea2b0f57.bindPopup(popup_25a524802d032602d112aba9a6735844)
+        ;
+
+        
+    
+    
+                marker_7d081b0e233fb97bf6a6417aea2b0f57.setIcon(icon_8c1aa807390c5d473ea0733e79eec4f6);
+            
+    
+            var marker_d53a82fc4889b9d8dd12d296a0e6f392 = L.marker(
+                [37.7883129, 126.7716036],
+                {
+}
+            ).addTo(map_08b7d57984f7604dfda2d2c8e942c5f0);
+        
+    
+            var icon_0c4e8c64e3afe0ee10ec98f8d9436350 = L.AwesomeMarkers.icon(
+                {
+  "markerColor": "blue",
+  "iconColor": "white",
+  "icon": "exclamation-sign",
+  "prefix": "glyphicon",
+  "extraClasses": "fa-rotate-0",
+}
+            );
+        
+    
+        var popup_66903460d480328a8ce544e917f4790f = L.popup({
+  "maxWidth": 320,
+});
+
+        
+            
+                var html_d7778dfae515bf8dd8967418eee27549 = $(`<div id="html_d7778dfae515bf8dd8967418eee27549" style="width: 100.0%; height: 100.0%;">         <div style="font-family: Arial; width: 280px;">             <h4 style="margin-bottom: 10px;">📍 신고 #43</h4>             <hr style="margin: 5px 0;">             <p><b>위험도:</b> Level 3 (주의)</p>             <p><b>긴급도:</b> 5</p>             <p><b>시간:</b> 2025-10-30 23:04</p>             <p><b>위치:</b> 위도: 37.788313, 경도: 126.771604</p>                          <p><b>행정동:</b> 월롱면</p>             <p><b>생활인구:</b> 3,463명</p>             <p><b>군집 반경:</b> 0.91km</p>         </div>         </div>`)[0];
+                popup_66903460d480328a8ce544e917f4790f.setContent(html_d7778dfae515bf8dd8967418eee27549);
+            
+        
+
+        marker_d53a82fc4889b9d8dd12d296a0e6f392.bindPopup(popup_66903460d480328a8ce544e917f4790f)
+        ;
+
+        
+    
+    
+                marker_d53a82fc4889b9d8dd12d296a0e6f392.setIcon(icon_0c4e8c64e3afe0ee10ec98f8d9436350);
+            
+    
+            var marker_0258dbaed91965de86d2eb0ef008f93d = L.marker(
+                [37.6580922, 126.6128547],
+                {
+}
+            ).addTo(map_08b7d57984f7604dfda2d2c8e942c5f0);
+        
+    
+            var icon_38a34c10a3be431f7b221ca56e66dfbb = L.AwesomeMarkers.icon(
+                {
+  "markerColor": "red",
+  "iconColor": "white",
+  "icon": "fire",
+  "prefix": "glyphicon",
+  "extraClasses": "fa-rotate-0",
+}
+            );
+        
+    
+        var popup_8c3cf3f8656a1377d7fbb6870df95075 = L.popup({
+  "maxWidth": 320,
+});
+
+        
+            
+                var html_0237b96a8f6da27b0e761d0dad5e3d0e = $(`<div id="html_0237b96a8f6da27b0e761d0dad5e3d0e" style="width: 100.0%; height: 100.0%;">         <div style="font-family: Arial; width: 280px;">             <h4 style="margin-bottom: 10px;">📍 신고 #44</h4>             <hr style="margin: 5px 0;">             <p><b>위험도:</b> Level 4 (경고)</p>             <p><b>긴급도:</b> 1</p>             <p><b>시간:</b> 2025-10-30 23:04</p>             <p><b>위치:</b> 위도: 37.658092, 경도: 126.612855</p>                          <p><b>행정동:</b> 운정5동</p>             <p><b>생활인구:</b> 31,802명</p>             <p><b>군집 반경:</b> 0.34km</p>         </div>         </div>`)[0];
+                popup_8c3cf3f8656a1377d7fbb6870df95075.setContent(html_0237b96a8f6da27b0e761d0dad5e3d0e);
+            
+        
+
+        marker_0258dbaed91965de86d2eb0ef008f93d.bindPopup(popup_8c3cf3f8656a1377d7fbb6870df95075)
+        ;
+
+        
+    
+    
+                marker_0258dbaed91965de86d2eb0ef008f93d.setIcon(icon_38a34c10a3be431f7b221ca56e66dfbb);
+            
+    
+            var marker_d1b0a21bd27e9c7b2c18e27f9feb19f4 = L.marker(
+                [37.79784, 126.79092],
+                {
+}
+            ).addTo(map_08b7d57984f7604dfda2d2c8e942c5f0);
+        
+    
+            var icon_fc7786bd1230f14c7b07be05d9ce7eee = L.AwesomeMarkers.icon(
+                {
+  "markerColor": "blue",
+  "iconColor": "white",
+  "icon": "exclamation-sign",
+  "prefix": "glyphicon",
+  "extraClasses": "fa-rotate-0",
+}
+            );
+        
+    
+        var popup_b0f1f3b66fd0ac8522c4cc8ed3278427 = L.popup({
+  "maxWidth": 320,
+});
+
+        
+            
+                var html_f6bff04d0c4615fba180b2f2d75f7149 = $(`<div id="html_f6bff04d0c4615fba180b2f2d75f7149" style="width: 100.0%; height: 100.0%;">         <div style="font-family: Arial; width: 280px;">             <h4 style="margin-bottom: 10px;">📍 신고 #45</h4>             <hr style="margin: 5px 0;">             <p><b>위험도:</b> Level 3 (주의)</p>             <p><b>긴급도:</b> 2</p>             <p><b>시간:</b> 2025-10-30 23:04</p>             <p><b>위치:</b> 위도: 37.797840, 경도: 126.790920</p>                          <p><b>행정동:</b> 월롱면</p>             <p><b>생활인구:</b> 3,463명</p>             <p><b>군집 반경:</b> 0.91km</p>         </div>         </div>`)[0];
+                popup_b0f1f3b66fd0ac8522c4cc8ed3278427.setContent(html_f6bff04d0c4615fba180b2f2d75f7149);
+            
+        
+
+        marker_d1b0a21bd27e9c7b2c18e27f9feb19f4.bindPopup(popup_b0f1f3b66fd0ac8522c4cc8ed3278427)
+        ;
+
+        
+    
+    
+                marker_d1b0a21bd27e9c7b2c18e27f9feb19f4.setIcon(icon_fc7786bd1230f14c7b07be05d9ce7eee);
+            
+    
+            var marker_17859960a9d008c73f82a458048f3ff1 = L.marker(
+                [37.7282859, 126.7734092],
+                {
+}
+            ).addTo(map_08b7d57984f7604dfda2d2c8e942c5f0);
+        
+    
+            var icon_d0e277cf41e099f9e2478331c0978bb5 = L.AwesomeMarkers.icon(
+                {
+  "markerColor": "blue",
+  "iconColor": "white",
+  "icon": "exclamation-sign",
+  "prefix": "glyphicon",
+  "extraClasses": "fa-rotate-0",
+}
+            );
+        
+    
+        var popup_c8344be817c0121efdf3ae256d87e03f = L.popup({
+  "maxWidth": 320,
+});
+
+        
+            
+                var html_64939eee3f3a736ed16d315f84ba44c6 = $(`<div id="html_64939eee3f3a736ed16d315f84ba44c6" style="width: 100.0%; height: 100.0%;">         <div style="font-family: Arial; width: 280px;">             <h4 style="margin-bottom: 10px;">📍 신고 #46</h4>             <hr style="margin: 5px 0;">             <p><b>위험도:</b> Level 3 (주의)</p>             <p><b>긴급도:</b> 3</p>             <p><b>시간:</b> 2025-10-30 23:04</p>             <p><b>위치:</b> 위도: 37.728286, 경도: 126.773409</p>                          <p><b>행정동:</b> 운정4동</p>             <p><b>생활인구:</b> 20,939명</p>             <p><b>군집 반경:</b> 0.45km</p>         </div>         </div>`)[0];
+                popup_c8344be817c0121efdf3ae256d87e03f.setContent(html_64939eee3f3a736ed16d315f84ba44c6);
+            
+        
+
+        marker_17859960a9d008c73f82a458048f3ff1.bindPopup(popup_c8344be817c0121efdf3ae256d87e03f)
+        ;
+
+        
+    
+    
+                marker_17859960a9d008c73f82a458048f3ff1.setIcon(icon_d0e277cf41e099f9e2478331c0978bb5);
+            
+    
+            var marker_7c50bb9726b178ad89e2f71aba3499c3 = L.marker(
+                [37.7532481, 126.8140871],
+                {
+}
+            ).addTo(map_08b7d57984f7604dfda2d2c8e942c5f0);
+        
+    
+            var icon_7e02ec0437d741ae93bdf6aca1d26724 = L.AwesomeMarkers.icon(
+                {
+  "markerColor": "blue",
+  "iconColor": "white",
+  "icon": "exclamation-sign",
+  "prefix": "glyphicon",
+  "extraClasses": "fa-rotate-0",
+}
+            );
+        
+    
+        var popup_d4daa5596b6a31898d249d0a9e209c05 = L.popup({
+  "maxWidth": 320,
+});
+
+        
+            
+                var html_ab2f84697e3692fdafb6073e47737db5 = $(`<div id="html_ab2f84697e3692fdafb6073e47737db5" style="width: 100.0%; height: 100.0%;">         <div style="font-family: Arial; width: 280px;">             <h4 style="margin-bottom: 10px;">📍 신고 #47</h4>             <hr style="margin: 5px 0;">             <p><b>위험도:</b> Level 3 (주의)</p>             <p><b>긴급도:</b> 1</p>             <p><b>시간:</b> 2025-10-30 23:04</p>             <p><b>위치:</b> 위도: 37.753248, 경도: 126.814087</p>                          <p><b>행정동:</b> 조리읍</p>             <p><b>생활인구:</b> 18,058명</p>             <p><b>군집 반경:</b> 0.49km</p>         </div>         </div>`)[0];
+                popup_d4daa5596b6a31898d249d0a9e209c05.setContent(html_ab2f84697e3692fdafb6073e47737db5);
+            
+        
+
+        marker_7c50bb9726b178ad89e2f71aba3499c3.bindPopup(popup_d4daa5596b6a31898d249d0a9e209c05)
+        ;
+
+        
+    
+    
+                marker_7c50bb9726b178ad89e2f71aba3499c3.setIcon(icon_7e02ec0437d741ae93bdf6aca1d26724);
+            
+    
+            var marker_03cb0933917c077f51d5751ac8619472 = L.marker(
+                [37.293103, 126.9470415],
+                {
+}
+            ).addTo(map_08b7d57984f7604dfda2d2c8e942c5f0);
+        
+    
+            var icon_4a32f5df9ea17b55c221f9c42bcb62b3 = L.AwesomeMarkers.icon(
+                {
+  "markerColor": "blue",
+  "iconColor": "white",
+  "icon": "record",
+  "prefix": "glyphicon",
+  "extraClasses": "fa-rotate-0",
+}
+            );
+        
+    
+        var popup_179d524f531776e48dfe10fdf63587fb = L.popup({
+  "maxWidth": 320,
+});
+
+        
+            
+                var html_e26d16eb7926d9b3bc79fca53f272b2e = $(`<div id="html_e26d16eb7926d9b3bc79fca53f272b2e" style="width: 100.0%; height: 100.0%;">         <div style="font-family: Arial; width: 280px;">             <h4 style="margin-bottom: 10px;">📍 신고 #48</h4>             <hr style="margin: 5px 0;">             <p><b>위험도:</b> 단독 (긴급도 1)</p>             <p><b>긴급도:</b> 1</p>             <p><b>시간:</b> 2025-10-30 23:05</p>             <p><b>위치:</b> 위도: 37.293103, 경도: 126.947041</p>                          <p><b>행정동:</b> 운정4동</p>             <p><b>생활인구:</b> 20,939명</p>             <p><b>군집 반경:</b> 0.45km</p>         </div>         </div>`)[0];
+                popup_179d524f531776e48dfe10fdf63587fb.setContent(html_e26d16eb7926d9b3bc79fca53f272b2e);
+            
+        
+
+        marker_03cb0933917c077f51d5751ac8619472.bindPopup(popup_179d524f531776e48dfe10fdf63587fb)
+        ;
+
+        
+    
+    
+                marker_03cb0933917c077f51d5751ac8619472.setIcon(icon_4a32f5df9ea17b55c221f9c42bcb62b3);
+            
+    
+            var marker_a99459acab0e3e8846749d54489c8266 = L.marker(
+                [35.1837781, 126.7877801],
+                {
+}
+            ).addTo(map_08b7d57984f7604dfda2d2c8e942c5f0);
+        
+    
+            var icon_671ff960baaf08f5f5af6b7d49aae5e7 = L.AwesomeMarkers.icon(
+                {
+  "markerColor": "red",
+  "iconColor": "white",
+  "icon": "record",
+  "prefix": "glyphicon",
+  "extraClasses": "fa-rotate-0",
+}
+            );
+        
+    
+        var popup_2d908ed0dabbc8277c19a8620d94af44 = L.popup({
+  "maxWidth": 320,
+});
+
+        
+            
+                var html_ad5bdb79a605d45012e05215b2862ddb = $(`<div id="html_ad5bdb79a605d45012e05215b2862ddb" style="width: 100.0%; height: 100.0%;">         <div style="font-family: Arial; width: 280px;">             <h4 style="margin-bottom: 10px;">📍 신고 #49</h4>             <hr style="margin: 5px 0;">             <p><b>위험도:</b> 단독 (긴급도 4)</p>             <p><b>긴급도:</b> 4</p>             <p><b>시간:</b> 2025-10-30 23:05</p>             <p><b>위치:</b> 위도: 35.183778, 경도: 126.787780</p>                          <p><b>행정동:</b> 운정6동</p>             <p><b>생활인구:</b> 16,859명</p>             <p><b>군집 반경:</b> 0.5km</p>         </div>         </div>`)[0];
+                popup_2d908ed0dabbc8277c19a8620d94af44.setContent(html_ad5bdb79a605d45012e05215b2862ddb);
+            
+        
+
+        marker_a99459acab0e3e8846749d54489c8266.bindPopup(popup_2d908ed0dabbc8277c19a8620d94af44)
+        ;
+
+        
+    
+    
+                marker_a99459acab0e3e8846749d54489c8266.setIcon(icon_671ff960baaf08f5f5af6b7d49aae5e7);
+            
+    
+            var marker_e9483413c1bfb651be16ad65d743bb46 = L.marker(
+                [37.7744196, 126.7973779],
+                {
+}
+            ).addTo(map_08b7d57984f7604dfda2d2c8e942c5f0);
+        
+    
+            var icon_0427fa00f67f176e81042424f14386e8 = L.AwesomeMarkers.icon(
+                {
+  "markerColor": "blue",
+  "iconColor": "white",
+  "icon": "record",
+  "prefix": "glyphicon",
+  "extraClasses": "fa-rotate-0",
+}
+            );
+        
+    
+        var popup_633d6bdc2f741349496ab89b4fc854f6 = L.popup({
+  "maxWidth": 320,
+});
+
+        
+            
+                var html_c9951c9e7ddea367478064ec3f8d362b = $(`<div id="html_c9951c9e7ddea367478064ec3f8d362b" style="width: 100.0%; height: 100.0%;">         <div style="font-family: Arial; width: 280px;">             <h4 style="margin-bottom: 10px;">📍 신고 #50</h4>             <hr style="margin: 5px 0;">             <p><b>위험도:</b> 단독 (긴급도 2)</p>             <p><b>긴급도:</b> 2</p>             <p><b>시간:</b> 2025-10-30 23:05</p>             <p><b>위치:</b> 위도: 37.774420, 경도: 126.797378</p>                          <p><b>행정동:</b> 금촌3동</p>             <p><b>생활인구:</b> 15,412명</p>             <p><b>군집 반경:</b> 0.53km</p>         </div>         </div>`)[0];
+                popup_633d6bdc2f741349496ab89b4fc854f6.setContent(html_c9951c9e7ddea367478064ec3f8d362b);
+            
+        
+
+        marker_e9483413c1bfb651be16ad65d743bb46.bindPopup(popup_633d6bdc2f741349496ab89b4fc854f6)
+        ;
+
+        
+    
+    
+                marker_e9483413c1bfb651be16ad65d743bb46.setIcon(icon_0427fa00f67f176e81042424f14386e8);
+            
+    
+            var circle_marker_654f9f745920a616f80fa1b039e0982a = L.circleMarker(
+                [37.658092, 126.612855],
+                {"bubblingMouseEvents": true, "color": "#FF6347", "dashArray": null, "dashOffset": null, "fill": true, "fillColor": "#FF6347", "fillOpacity": 0.6, "fillRule": "evenodd", "lineCap": "round", "lineJoin": "round", "opacity": 1.0, "radius": 22, "stroke": true, "weight": 2}
+            ).addTo(map_08b7d57984f7604dfda2d2c8e942c5f0);
+        
+    
+        var popup_04aafe0cb2dfde7914f6dd06f918fe4b = L.popup({
+  "maxWidth": 360,
+});
+
+        
+            
+                var html_a80064f34c2d6065030a01736a620761 = $(`<div id="html_a80064f34c2d6065030a01736a620761" style="width: 100.0%; height: 100.0%;">             <div style="font-family: Arial; width: 320px;">                 <h4 style="margin-bottom: 10px;">🎯 군집 #3</h4>                 <hr style="margin: 5px 0;">                 <p><b>위치:</b> 위도 37.658092, 경도 126.612855</p>                 <p><b>행정동:</b> 운정5동</p><p><b>평균 군집 반경:</b> 0.34km (340m)</p>                 <p><b>위험도:</b> Level 4 (경고)</p>                 <p><b>위험 점수:</b> 4.15</p>                 <p><b>신고 건수:</b> 4건</p>                 <p><b>평균 긴급도:</b> 3.5</p>                 <p><b>최대 긴급도:</b> 5</p>                 <p><b>신고 ID:</b> 4, 24, 34, 44</p>             </div>             </div>`)[0];
+                popup_04aafe0cb2dfde7914f6dd06f918fe4b.setContent(html_a80064f34c2d6065030a01736a620761);
+            
+        
+
+        circle_marker_654f9f745920a616f80fa1b039e0982a.bindPopup(popup_04aafe0cb2dfde7914f6dd06f918fe4b)
+        ;
+
+        
+    
+    
+            var circle_032b712598c2da51c8c75b999000b6c0 = L.circle(
+                [37.658092, 126.612855],
+                {"bubblingMouseEvents": true, "color": "#FF6347", "dashArray": "5, 5", "dashOffset": null, "fill": true, "fillColor": "#FF6347", "fillOpacity": 0.15, "fillRule": "evenodd", "lineCap": "round", "lineJoin": "round", "opacity": 1.0, "radius": 340.0, "stroke": true, "weight": 2}
+            ).addTo(map_08b7d57984f7604dfda2d2c8e942c5f0);
+        
+    
+        var popup_25f5552b79266a4d87ed36a6c183108e = L.popup({
+  "maxWidth": "100%",
+});
+
+        
+            
+                var html_914147bac51729bb020f6314b0a37466 = $(`<div id="html_914147bac51729bb020f6314b0a37466" style="width: 100.0%; height: 100.0%;">군집 영향 범위: 약 340m</div>`)[0];
+                popup_25f5552b79266a4d87ed36a6c183108e.setContent(html_914147bac51729bb020f6314b0a37466);
+            
+        
+
+        circle_032b712598c2da51c8c75b999000b6c0.bindPopup(popup_25f5552b79266a4d87ed36a6c183108e)
+        ;
+
+        
+    
+    
+            var circle_marker_8666817caec18267cd5f9e4e6e486016 = L.circleMarker(
+                [37.750069, 126.798461],
+                {"bubblingMouseEvents": true, "color": "#FF6347", "dashArray": null, "dashOffset": null, "fill": true, "fillColor": "#FF6347", "fillOpacity": 0.6, "fillRule": "evenodd", "lineCap": "round", "lineJoin": "round", "opacity": 1.0, "radius": 22, "stroke": true, "weight": 2}
+            ).addTo(map_08b7d57984f7604dfda2d2c8e942c5f0);
+        
+    
+        var popup_4f6cfabcad89dd0cc171faf3ebbdab68 = L.popup({
+  "maxWidth": 360,
+});
+
+        
+            
+                var html_800b0e45c9dd23068bc333afbe6bcf3c = $(`<div id="html_800b0e45c9dd23068bc333afbe6bcf3c" style="width: 100.0%; height: 100.0%;">             <div style="font-family: Arial; width: 320px;">                 <h4 style="margin-bottom: 10px;">🎯 군집 #6</h4>                 <hr style="margin: 5px 0;">                 <p><b>위치:</b> 위도 37.750069, 경도 126.798461</p>                 <p><b>행정동:</b> 조리읍</p><p><b>평균 군집 반경:</b> 0.49km (490m)</p>                 <p><b>위험도:</b> Level 4 (경고)</p>                 <p><b>위험 점수:</b> 4.08</p>                 <p><b>신고 건수:</b> 4건</p>                 <p><b>평균 긴급도:</b> 3.25</p>                 <p><b>최대 긴급도:</b> 5</p>                 <p><b>신고 ID:</b> 13, 14, 39, 42</p>             </div>             </div>`)[0];
+                popup_4f6cfabcad89dd0cc171faf3ebbdab68.setContent(html_800b0e45c9dd23068bc333afbe6bcf3c);
+            
+        
+
+        circle_marker_8666817caec18267cd5f9e4e6e486016.bindPopup(popup_4f6cfabcad89dd0cc171faf3ebbdab68)
+        ;
+
+        
+    
+    
+            var circle_797b4f6dc33b3054b0d88671d57015f6 = L.circle(
+                [37.750069, 126.798461],
+                {"bubblingMouseEvents": true, "color": "#FF6347", "dashArray": "5, 5", "dashOffset": null, "fill": true, "fillColor": "#FF6347", "fillOpacity": 0.15, "fillRule": "evenodd", "lineCap": "round", "lineJoin": "round", "opacity": 1.0, "radius": 490.0, "stroke": true, "weight": 2}
+            ).addTo(map_08b7d57984f7604dfda2d2c8e942c5f0);
+        
+    
+        var popup_be6b702e7097976e10d78bf9a2f7522a = L.popup({
+  "maxWidth": "100%",
+});
+
+        
+            
+                var html_d91446609d1b4b57fe78c3bb57857d0f = $(`<div id="html_d91446609d1b4b57fe78c3bb57857d0f" style="width: 100.0%; height: 100.0%;">군집 영향 범위: 약 490m</div>`)[0];
+                popup_be6b702e7097976e10d78bf9a2f7522a.setContent(html_d91446609d1b4b57fe78c3bb57857d0f);
+            
+        
+
+        circle_797b4f6dc33b3054b0d88671d57015f6.bindPopup(popup_be6b702e7097976e10d78bf9a2f7522a)
+        ;
+
+        
+    
+    
+            var circle_marker_185b176c2d6f78ed1f0abead20dd03d5 = L.circleMarker(
+                [37.753248, 126.814087],
+                {"bubblingMouseEvents": true, "color": "#FFA500", "dashArray": null, "dashOffset": null, "fill": true, "fillColor": "#FFA500", "fillOpacity": 0.6, "fillRule": "evenodd", "lineCap": "round", "lineJoin": "round", "opacity": 1.0, "radius": 22, "stroke": true, "weight": 2}
+            ).addTo(map_08b7d57984f7604dfda2d2c8e942c5f0);
+        
+    
+        var popup_fe26927b4285b8c8878fd24a8292b3b3 = L.popup({
+  "maxWidth": 360,
+});
+
+        
+            
+                var html_4909a1ed9ac644d147dbbc2b9b667cd9 = $(`<div id="html_4909a1ed9ac644d147dbbc2b9b667cd9" style="width: 100.0%; height: 100.0%;">             <div style="font-family: Arial; width: 320px;">                 <h4 style="margin-bottom: 10px;">🎯 군집 #2</h4>                 <hr style="margin: 5px 0;">                 <p><b>위치:</b> 위도 37.753248, 경도 126.814087</p>                 <p><b>행정동:</b> 조리읍</p><p><b>평균 군집 반경:</b> 0.49km (490m)</p>                 <p><b>위험도:</b> Level 3 (주의)</p>                 <p><b>위험 점수:</b> 3.92</p>                 <p><b>신고 건수:</b> 4건</p>                 <p><b>평균 긴급도:</b> 2.75</p>                 <p><b>최대 긴급도:</b> 5</p>                 <p><b>신고 ID:</b> 3, 27, 31, 47</p>             </div>             </div>`)[0];
+                popup_fe26927b4285b8c8878fd24a8292b3b3.setContent(html_4909a1ed9ac644d147dbbc2b9b667cd9);
+            
+        
+
+        circle_marker_185b176c2d6f78ed1f0abead20dd03d5.bindPopup(popup_fe26927b4285b8c8878fd24a8292b3b3)
+        ;
+
+        
+    
+    
+            var circle_30d0a024247796c3b611546b15d723ea = L.circle(
+                [37.753248, 126.814087],
+                {"bubblingMouseEvents": true, "color": "#FFA500", "dashArray": "5, 5", "dashOffset": null, "fill": true, "fillColor": "#FFA500", "fillOpacity": 0.15, "fillRule": "evenodd", "lineCap": "round", "lineJoin": "round", "opacity": 1.0, "radius": 490.0, "stroke": true, "weight": 2}
+            ).addTo(map_08b7d57984f7604dfda2d2c8e942c5f0);
+        
+    
+        var popup_48007fba2feda3c021755d0cb02f6477 = L.popup({
+  "maxWidth": "100%",
+});
+
+        
+            
+                var html_e29214c110f50e568a1309bf95ede4f7 = $(`<div id="html_e29214c110f50e568a1309bf95ede4f7" style="width: 100.0%; height: 100.0%;">군집 영향 범위: 약 490m</div>`)[0];
+                popup_48007fba2feda3c021755d0cb02f6477.setContent(html_e29214c110f50e568a1309bf95ede4f7);
+            
+        
+
+        circle_30d0a024247796c3b611546b15d723ea.bindPopup(popup_48007fba2feda3c021755d0cb02f6477)
+        ;
+
+        
+    
+    
+            var circle_marker_1f27147625dc495d9b96d27e2f8c4acb = L.circleMarker(
+                [37.728514, 126.774913],
+                {"bubblingMouseEvents": true, "color": "#FFA500", "dashArray": null, "dashOffset": null, "fill": true, "fillColor": "#FFA500", "fillOpacity": 0.6, "fillRule": "evenodd", "lineCap": "round", "lineJoin": "round", "opacity": 1.0, "radius": 19, "stroke": true, "weight": 2}
+            ).addTo(map_08b7d57984f7604dfda2d2c8e942c5f0);
+        
+    
+        var popup_4b88aa0673577bd3c7fee377b741ab31 = L.popup({
+  "maxWidth": 360,
+});
+
+        
+            
+                var html_c168cce637b00b4024133020fe42b759 = $(`<div id="html_c168cce637b00b4024133020fe42b759" style="width: 100.0%; height: 100.0%;">             <div style="font-family: Arial; width: 320px;">                 <h4 style="margin-bottom: 10px;">🎯 군집 #1</h4>                 <hr style="margin: 5px 0;">                 <p><b>위치:</b> 위도 37.728514, 경도 126.774913</p>                 <p><b>행정동:</b> 운정4동</p><p><b>평균 군집 반경:</b> 0.45km (450m)</p>                 <p><b>위험도:</b> Level 3 (주의)</p>                 <p><b>위험 점수:</b> 3.7</p>                 <p><b>신고 건수:</b> 3건</p>                 <p><b>평균 긴급도:</b> 3.33</p>                 <p><b>최대 긴급도:</b> 5</p>                 <p><b>신고 ID:</b> 2, 5, 46</p>             </div>             </div>`)[0];
+                popup_4b88aa0673577bd3c7fee377b741ab31.setContent(html_c168cce637b00b4024133020fe42b759);
+            
+        
+
+        circle_marker_1f27147625dc495d9b96d27e2f8c4acb.bindPopup(popup_4b88aa0673577bd3c7fee377b741ab31)
+        ;
+
+        
+    
+    
+            var circle_d896900e2a0669cf1340c6493e49ab5c = L.circle(
+                [37.728514, 126.774913],
+                {"bubblingMouseEvents": true, "color": "#FFA500", "dashArray": "5, 5", "dashOffset": null, "fill": true, "fillColor": "#FFA500", "fillOpacity": 0.15, "fillRule": "evenodd", "lineCap": "round", "lineJoin": "round", "opacity": 1.0, "radius": 450.0, "stroke": true, "weight": 2}
+            ).addTo(map_08b7d57984f7604dfda2d2c8e942c5f0);
+        
+    
+        var popup_6065383af0c4c43eb7e1c623973b182a = L.popup({
+  "maxWidth": "100%",
+});
+
+        
+            
+                var html_2f4bb8c85a72e690fc7b6f32c80ede32 = $(`<div id="html_2f4bb8c85a72e690fc7b6f32c80ede32" style="width: 100.0%; height: 100.0%;">군집 영향 범위: 약 450m</div>`)[0];
+                popup_6065383af0c4c43eb7e1c623973b182a.setContent(html_2f4bb8c85a72e690fc7b6f32c80ede32);
+            
+        
+
+        circle_d896900e2a0669cf1340c6493e49ab5c.bindPopup(popup_6065383af0c4c43eb7e1c623973b182a)
+        ;
+
+        
+    
+    
+            var circle_marker_77e431d40a5a485647e1e01026b02287 = L.circleMarker(
+                [37.77806, 126.76036],
+                {"bubblingMouseEvents": true, "color": "#FFA500", "dashArray": null, "dashOffset": null, "fill": true, "fillColor": "#FFA500", "fillOpacity": 0.6, "fillRule": "evenodd", "lineCap": "round", "lineJoin": "round", "opacity": 1.0, "radius": 16, "stroke": true, "weight": 2}
+            ).addTo(map_08b7d57984f7604dfda2d2c8e942c5f0);
+        
+    
+        var popup_2c6b1607043fb0340a87d027f5321fd7 = L.popup({
+  "maxWidth": 360,
+});
+
+        
+            
+                var html_cb44108f41957c8bfed1c27c75953cdc = $(`<div id="html_cb44108f41957c8bfed1c27c75953cdc" style="width: 100.0%; height: 100.0%;">             <div style="font-family: Arial; width: 320px;">                 <h4 style="margin-bottom: 10px;">🎯 군집 #0</h4>                 <hr style="margin: 5px 0;">                 <p><b>위치:</b> 위도 37.778060, 경도 126.760360</p>                 <p><b>행정동:</b> 금촌3동</p><p><b>평균 군집 반경:</b> 0.53km (530m)</p>                 <p><b>위험도:</b> Level 3 (주의)</p>                 <p><b>위험 점수:</b> 3.35</p>                 <p><b>신고 건수:</b> 2건</p>                 <p><b>평균 긴급도:</b> 3.5</p>                 <p><b>최대 긴급도:</b> 5</p>                 <p><b>신고 ID:</b> 1, 8</p>             </div>             </div>`)[0];
+                popup_2c6b1607043fb0340a87d027f5321fd7.setContent(html_cb44108f41957c8bfed1c27c75953cdc);
+            
+        
+
+        circle_marker_77e431d40a5a485647e1e01026b02287.bindPopup(popup_2c6b1607043fb0340a87d027f5321fd7)
+        ;
+
+        
+    
+    
+            var circle_ce149f841d02b7c0f278608e40278411 = L.circle(
+                [37.77806, 126.76036],
+                {"bubblingMouseEvents": true, "color": "#FFA500", "dashArray": "5, 5", "dashOffset": null, "fill": true, "fillColor": "#FFA500", "fillOpacity": 0.15, "fillRule": "evenodd", "lineCap": "round", "lineJoin": "round", "opacity": 1.0, "radius": 530.0, "stroke": true, "weight": 2}
+            ).addTo(map_08b7d57984f7604dfda2d2c8e942c5f0);
+        
+    
+        var popup_9731f27d50556d5acb05f3d57994c6df = L.popup({
+  "maxWidth": "100%",
+});
+
+        
+            
+                var html_a238c362a622a868339234df157a492d = $(`<div id="html_a238c362a622a868339234df157a492d" style="width: 100.0%; height: 100.0%;">군집 영향 범위: 약 530m</div>`)[0];
+                popup_9731f27d50556d5acb05f3d57994c6df.setContent(html_a238c362a622a868339234df157a492d);
+            
+        
+
+        circle_ce149f841d02b7c0f278608e40278411.bindPopup(popup_9731f27d50556d5acb05f3d57994c6df)
+        ;
+
+        
+    
+    
+            var circle_marker_0781ceef8ae3b6345a1b1c3c31764b14 = L.circleMarker(
+                [37.787528, 126.770712],
+                {"bubblingMouseEvents": true, "color": "#FFA500", "dashArray": null, "dashOffset": null, "fill": true, "fillColor": "#FFA500", "fillOpacity": 0.6, "fillRule": "evenodd", "lineCap": "round", "lineJoin": "round", "opacity": 1.0, "radius": 16, "stroke": true, "weight": 2}
+            ).addTo(map_08b7d57984f7604dfda2d2c8e942c5f0);
+        
+    
+        var popup_1f37ae511622bfc4fc0435527177b868 = L.popup({
+  "maxWidth": 360,
+});
+
+        
+            
+                var html_76e4011f9fa3f5edebbea9d5d431f289 = $(`<div id="html_76e4011f9fa3f5edebbea9d5d431f289" style="width: 100.0%; height: 100.0%;">             <div style="font-family: Arial; width: 320px;">                 <h4 style="margin-bottom: 10px;">🎯 군집 #8</h4>                 <hr style="margin: 5px 0;">                 <p><b>위치:</b> 위도 37.787528, 경도 126.770712</p>                 <p><b>행정동:</b> 금촌3동, 월롱면</p><p><b>평균 군집 반경:</b> 0.72km (720m)</p>                 <p><b>위험도:</b> Level 3 (주의)</p>                 <p><b>위험 점수:</b> 3.35</p>                 <p><b>신고 건수:</b> 2건</p>                 <p><b>평균 긴급도:</b> 3.5</p>                 <p><b>최대 긴급도:</b> 5</p>                 <p><b>신고 ID:</b> 36, 43</p>             </div>             </div>`)[0];
+                popup_1f37ae511622bfc4fc0435527177b868.setContent(html_76e4011f9fa3f5edebbea9d5d431f289);
+            
+        
+
+        circle_marker_0781ceef8ae3b6345a1b1c3c31764b14.bindPopup(popup_1f37ae511622bfc4fc0435527177b868)
+        ;
+
+        
+    
+    
+            var circle_4c81b233fc42960cb7b8fb9ef398abef = L.circle(
+                [37.787528, 126.770712],
+                {"bubblingMouseEvents": true, "color": "#FFA500", "dashArray": "5, 5", "dashOffset": null, "fill": true, "fillColor": "#FFA500", "fillOpacity": 0.15, "fillRule": "evenodd", "lineCap": "round", "lineJoin": "round", "opacity": 1.0, "radius": 720.0, "stroke": true, "weight": 2}
+            ).addTo(map_08b7d57984f7604dfda2d2c8e942c5f0);
+        
+    
+        var popup_826fd1eae4777f495a3af20119fdfa22 = L.popup({
+  "maxWidth": "100%",
+});
+
+        
+            
+                var html_0ff08f447740c8a8b34e14821d0bcc08 = $(`<div id="html_0ff08f447740c8a8b34e14821d0bcc08" style="width: 100.0%; height: 100.0%;">군집 영향 범위: 약 720m</div>`)[0];
+                popup_826fd1eae4777f495a3af20119fdfa22.setContent(html_0ff08f447740c8a8b34e14821d0bcc08);
+            
+        
+
+        circle_4c81b233fc42960cb7b8fb9ef398abef.bindPopup(popup_826fd1eae4777f495a3af20119fdfa22)
+        ;
+
+        
+    
+    
+            var circle_marker_3073f5c8168633c8913ffcd36489494a = L.circleMarker(
+                [37.796995, 126.788247],
+                {"bubblingMouseEvents": true, "color": "#FFA500", "dashArray": null, "dashOffset": null, "fill": true, "fillColor": "#FFA500", "fillOpacity": 0.6, "fillRule": "evenodd", "lineCap": "round", "lineJoin": "round", "opacity": 1.0, "radius": 19, "stroke": true, "weight": 2}
+            ).addTo(map_08b7d57984f7604dfda2d2c8e942c5f0);
+        
+    
+        var popup_a76c66d3b86874ce9fce89bbc908e220 = L.popup({
+  "maxWidth": 360,
+});
+
+        
+            
+                var html_82ddb66e7a8e53fbc3db6b7dc1478655 = $(`<div id="html_82ddb66e7a8e53fbc3db6b7dc1478655" style="width: 100.0%; height: 100.0%;">             <div style="font-family: Arial; width: 320px;">                 <h4 style="margin-bottom: 10px;">🎯 군집 #4</h4>                 <hr style="margin: 5px 0;">                 <p><b>위치:</b> 위도 37.796995, 경도 126.788247</p>                 <p><b>행정동:</b> 월롱면</p><p><b>평균 군집 반경:</b> 0.91km (910m)</p>                 <p><b>위험도:</b> Level 3 (주의)</p>                 <p><b>위험 점수:</b> 3.3</p>                 <p><b>신고 건수:</b> 3건</p>                 <p><b>평균 긴급도:</b> 3.0</p>                 <p><b>최대 긴급도:</b> 4</p>                 <p><b>신고 ID:</b> 9, 25, 45</p>             </div>             </div>`)[0];
+                popup_a76c66d3b86874ce9fce89bbc908e220.setContent(html_82ddb66e7a8e53fbc3db6b7dc1478655);
+            
+        
+
+        circle_marker_3073f5c8168633c8913ffcd36489494a.bindPopup(popup_a76c66d3b86874ce9fce89bbc908e220)
+        ;
+
+        
+    
+    
+            var circle_2ca2be1d9cee5c42769273a7fc27c0bc = L.circle(
+                [37.796995, 126.788247],
+                {"bubblingMouseEvents": true, "color": "#FFA500", "dashArray": "5, 5", "dashOffset": null, "fill": true, "fillColor": "#FFA500", "fillOpacity": 0.15, "fillRule": "evenodd", "lineCap": "round", "lineJoin": "round", "opacity": 1.0, "radius": 910.0, "stroke": true, "weight": 2}
+            ).addTo(map_08b7d57984f7604dfda2d2c8e942c5f0);
+        
+    
+        var popup_f5857d94d598d054137fc383654b7f4e = L.popup({
+  "maxWidth": "100%",
+});
+
+        
+            
+                var html_7409fdc31bf2509c64814fb81f6b4288 = $(`<div id="html_7409fdc31bf2509c64814fb81f6b4288" style="width: 100.0%; height: 100.0%;">군집 영향 범위: 약 910m</div>`)[0];
+                popup_f5857d94d598d054137fc383654b7f4e.setContent(html_7409fdc31bf2509c64814fb81f6b4288);
+            
+        
+
+        circle_2ca2be1d9cee5c42769273a7fc27c0bc.bindPopup(popup_f5857d94d598d054137fc383654b7f4e)
+        ;
+
+        
+    
+    
+            var circle_marker_c8d54bf1adcad5ac9cae2cc8f0456d7b = L.circleMarker(
+                [37.698616, 126.848908],
+                {"bubblingMouseEvents": true, "color": "#FFA500", "dashArray": null, "dashOffset": null, "fill": true, "fillColor": "#FFA500", "fillOpacity": 0.6, "fillRule": "evenodd", "lineCap": "round", "lineJoin": "round", "opacity": 1.0, "radius": 16, "stroke": true, "weight": 2}
+            ).addTo(map_08b7d57984f7604dfda2d2c8e942c5f0);
+        
+    
+        var popup_64b2823b42a516b033525d3b9fd380fe = L.popup({
+  "maxWidth": 360,
+});
+
+        
+            
+                var html_dbb3e071510129d00ec108968b1964d6 = $(`<div id="html_dbb3e071510129d00ec108968b1964d6" style="width: 100.0%; height: 100.0%;">             <div style="font-family: Arial; width: 320px;">                 <h4 style="margin-bottom: 10px;">🎯 군집 #5</h4>                 <hr style="margin: 5px 0;">                 <p><b>위치:</b> 위도 37.698616, 경도 126.848908</p>                 <p><b>행정동:</b> 조리읍</p><p><b>평균 군집 반경:</b> 0.49km (490m)</p>                 <p><b>위험도:</b> Level 3 (주의)</p>                 <p><b>위험 점수:</b> 3.2</p>                 <p><b>신고 건수:</b> 2건</p>                 <p><b>평균 긴급도:</b> 4.0</p>                 <p><b>최대 긴급도:</b> 4</p>                 <p><b>신고 ID:</b> 11, 26</p>             </div>             </div>`)[0];
+                popup_64b2823b42a516b033525d3b9fd380fe.setContent(html_dbb3e071510129d00ec108968b1964d6);
+            
+        
+
+        circle_marker_c8d54bf1adcad5ac9cae2cc8f0456d7b.bindPopup(popup_64b2823b42a516b033525d3b9fd380fe)
+        ;
+
+        
+    
+    
+            var circle_25609f43aeaea83129208b9aff128a4f = L.circle(
+                [37.698616, 126.848908],
+                {"bubblingMouseEvents": true, "color": "#FFA500", "dashArray": "5, 5", "dashOffset": null, "fill": true, "fillColor": "#FFA500", "fillOpacity": 0.15, "fillRule": "evenodd", "lineCap": "round", "lineJoin": "round", "opacity": 1.0, "radius": 490.0, "stroke": true, "weight": 2}
+            ).addTo(map_08b7d57984f7604dfda2d2c8e942c5f0);
+        
+    
+        var popup_f4202a6e2a0e405d20948ec203e0353a = L.popup({
+  "maxWidth": "100%",
+});
+
+        
+            
+                var html_3555195dcb373003b417881e8a38fb56 = $(`<div id="html_3555195dcb373003b417881e8a38fb56" style="width: 100.0%; height: 100.0%;">군집 영향 범위: 약 490m</div>`)[0];
+                popup_f4202a6e2a0e405d20948ec203e0353a.setContent(html_3555195dcb373003b417881e8a38fb56);
+            
+        
+
+        circle_25609f43aeaea83129208b9aff128a4f.bindPopup(popup_f4202a6e2a0e405d20948ec203e0353a)
+        ;
+
+        
+    
+    
+            var circle_marker_f543f13736bc695bb44c77777155cfb9 = L.circleMarker(
+                [37.803059, 126.781361],
+                {"bubblingMouseEvents": true, "color": "#90EE90", "dashArray": null, "dashOffset": null, "fill": true, "fillColor": "#90EE90", "fillOpacity": 0.6, "fillRule": "evenodd", "lineCap": "round", "lineJoin": "round", "opacity": 1.0, "radius": 15, "stroke": true, "weight": 2}
+            ).addTo(map_08b7d57984f7604dfda2d2c8e942c5f0);
+        
+    
+        var popup_4e79c83871c42ca6c193e2da8cc075f4 = L.popup({
+  "maxWidth": 360,
+});
+
+        
+            
+                var html_c2ee61388868cdb1c58baf404ba38393 = $(`<div id="html_c2ee61388868cdb1c58baf404ba38393" style="width: 100.0%; height: 100.0%;">             <div style="font-family: Arial; width: 320px;">                 <h4 style="margin-bottom: 10px;">🎯 군집 #7</h4>                 <hr style="margin: 5px 0;">                 <p><b>위치:</b> 위도 37.803059, 경도 126.781361</p>                 <p><b>행정동:</b> 월롱면</p><p><b>평균 군집 반경:</b> 0.91km (910m)</p>                 <p><b>위험도:</b> Level 1 (낮음)</p>                 <p><b>위험 점수:</b> 1.0</p>                 <p><b>신고 건수:</b> 1건</p>                 <p><b>평균 긴급도:</b> 1.0</p>                 <p><b>최대 긴급도:</b> 1</p>                 <p><b>신고 ID:</b> 29</p>             </div>             </div>`)[0];
+                popup_4e79c83871c42ca6c193e2da8cc075f4.setContent(html_c2ee61388868cdb1c58baf404ba38393);
+            
+        
+
+        circle_marker_f543f13736bc695bb44c77777155cfb9.bindPopup(popup_4e79c83871c42ca6c193e2da8cc075f4)
+        ;
+
+        
+    
+    
+            var circle_cf791c394937ec8e51e550223a72ef84 = L.circle(
+                [37.803059, 126.781361],
+                {"bubblingMouseEvents": true, "color": "#90EE90", "dashArray": "5, 5", "dashOffset": null, "fill": true, "fillColor": "#90EE90", "fillOpacity": 0.15, "fillRule": "evenodd", "lineCap": "round", "lineJoin": "round", "opacity": 1.0, "radius": 910.0, "stroke": true, "weight": 2}
+            ).addTo(map_08b7d57984f7604dfda2d2c8e942c5f0);
+        
+    
+        var popup_b78c571657c1746c624ea0c5b8e828c3 = L.popup({
+  "maxWidth": "100%",
+});
+
+        
+            
+                var html_aee98755df67535db53689ccab7432aa = $(`<div id="html_aee98755df67535db53689ccab7432aa" style="width: 100.0%; height: 100.0%;">군집 영향 범위: 약 910m</div>`)[0];
+                popup_b78c571657c1746c624ea0c5b8e828c3.setContent(html_aee98755df67535db53689ccab7432aa);
+            
+        
+
+        circle_cf791c394937ec8e51e550223a72ef84.bindPopup(popup_b78c571657c1746c624ea0c5b8e828c3)
+        ;
+
+        
+    
+</script>
+</html>
