@@ -334,6 +334,53 @@
             overflow: hidden;
         }
 
+        /* 신고 상세 모달 전용 스타일 */
+        #reportDetailModal .map-container {
+            max-width: 420px;
+            max-height: 550px;
+            height: 550px;
+            width: calc(100% - 40px);
+            display: flex;
+            flex-direction: column;
+            padding: 12px;
+        }
+
+        #reportDetailModal .map-header {
+            margin-bottom: 8px;
+            flex-shrink: 0;
+        }
+
+        #reportDetailModal .map-header h3 {
+            font-size: 16px;
+        }
+
+        #reportDetailModal #reportDetailContent {
+            flex: 1;
+            overflow-y: auto;
+            overflow-x: hidden;
+            padding: 8px 0;
+            min-height: 0;
+        }
+
+        /* 스크롤바 스타일링 */
+        #reportDetailModal #reportDetailContent::-webkit-scrollbar {
+            width: 6px;
+        }
+
+        #reportDetailModal #reportDetailContent::-webkit-scrollbar-track {
+            background: #f1f1f1;
+            border-radius: 10px;
+        }
+
+        #reportDetailModal #reportDetailContent::-webkit-scrollbar-thumb {
+            background: #888;
+            border-radius: 10px;
+        }
+
+        #reportDetailModal #reportDetailContent::-webkit-scrollbar-thumb:hover {
+            background: #555;
+        }
+
         .map-header {
             display: flex;
             justify-content: space-between;
@@ -452,6 +499,22 @@
         </div>
     </div>
 
+    <!-- 신고 상세 모달 -->
+    <div class="map-modal hidden" id="reportDetailModal" style="display: none;">
+        <div class="map-container">
+            <div class="map-header">
+                <h3>📋 신고 상세 정보</h3>
+                <button class="close-btn" onclick="closeReportDetailModal()">×</button>
+            </div>
+            <div id="reportDetailContent">
+                <div style="text-align: center; padding: 40px;">
+                    <div class="loading"></div>
+                    <p style="margin-top: 20px; color: #6c757d;">로딩 중...</p>
+                </div>
+            </div>
+        </div>
+    </div>
+
     <script>
         class ChatBot {
             constructor() {
@@ -465,8 +528,16 @@
                 this.currentReportId = null;
                 this.damageTypes = [];
                 this.currentLocation = null;
+                this.currentImageFilename = null;  // 업로드된 이미지 파일명 저장
                 this.map = null;
                 this.marker = null;
+                
+                // user_id를 localStorage에서 가져오거나 생성
+                this.userId = localStorage.getItem('user_id');
+                if (!this.userId) {
+                    this.userId = 'user_' + Date.now();
+                    localStorage.setItem('user_id', this.userId);
+                }
                 
                 this.init();
             }
@@ -509,12 +580,196 @@
                     messageContent.appendChild(img);
                 } else {
                     messageContent.innerHTML = content;
+                    // 신고 내역 카드 렌더링 (백엔드에서 전달된 JSON 데이터 처리)
+                    this.renderReportCards(messageContent);
                 }
                 
                 messageDiv.appendChild(avatar);
                 messageDiv.appendChild(messageContent);
                 this.messages.appendChild(messageDiv);
                 this.scrollToBottom();
+            }
+
+            renderReportCards(messageContent) {
+                // data-report-cards 속성을 가진 div 찾기
+                const reportCardsDiv = messageContent.querySelector('[data-report-cards]');
+                if (!reportCardsDiv) return;
+
+                try {
+                    // 신고 카드가 있으면 같은 메시지의 다른 텍스트 내용 제거
+                    const parentNode = reportCardsDiv.parentNode;
+                    // reportCardsDiv 이후의 모든 형제 노드 제거 (LLM 응답 텍스트 등)
+                    let nextSibling = reportCardsDiv.nextSibling;
+                    while (nextSibling) {
+                        const toRemove = nextSibling;
+                        nextSibling = nextSibling.nextSibling;
+                        parentNode.removeChild(toRemove);
+                    }
+
+                    // JSON 데이터 파싱
+                    const reportsJson = reportCardsDiv.getAttribute('data-report-cards');
+                    const reports = JSON.parse(reportsJson);
+
+                    if (!reports || reports.length === 0) {
+                        reportCardsDiv.innerHTML = '<p style="color: #6c757d;">아직 신고 내역이 없습니다.</p>';
+                        return;
+                    }
+
+                    // 카드 HTML 생성
+                    let cardsHtml = `
+                        <div style="margin-bottom: 15px;">
+                            <p style="font-size: 16px; font-weight: 600; color: #333; margin-bottom: 15px;">
+                                📊 총 <strong style="color: #667eea;">${reports.length}개</strong>의 신고 내역이 있습니다
+                            </p>
+                        </div>
+                    `;
+
+                    reports.forEach(report => {
+                        const statusMap = {
+                            "접수": { label: "접수완료", color: "#17a2b8", icon: "📋" },
+                            "검토중": { label: "검토중", color: "#ffc107", icon: "🔍" },
+                            "처리중": { label: "처리중", color: "#007bff", icon: "⚙️" },
+                            "완료": { label: "처리완료", color: "#28a745", icon: "✅" }
+                        };
+                        
+                        const urgencyMap = {
+                            1: { label: "낮음", color: "#6c757d" },
+                            2: { label: "보통", color: "#28a745" },
+                            3: { label: "높음", color: "#ffc107" },
+                            4: { label: "매우높음", color: "#fd7e14" },
+                            5: { label: "긴급", color: "#dc3545" }
+                        };
+
+                        const statusInfo = statusMap[report.status] || { label: report.status, color: "#6c757d", icon: "📄" };
+                        const urgencyInfo = urgencyMap[report.urgency_level] || { label: "알 수 없음", color: "#6c757d" };
+
+                        // 날짜 포맷팅
+                        let created_at = report.created_at;
+                        if (created_at) {
+                            try {
+                                const date = new Date(created_at);
+                                created_at = date.toLocaleString('ko-KR', {
+                                    year: 'numeric',
+                                    month: 'long',
+                                    day: 'numeric',
+                                    hour: '2-digit',
+                                    minute: '2-digit'
+                                });
+                            } catch (e) {
+                                // 포맷팅 실패 시 그대로 사용
+                            }
+                        }
+
+                        cardsHtml += `
+                            <div style="
+                                background: linear-gradient(135deg, #ffffff 0%, #f8f9fa 100%);
+                                border: 1px solid #e9ecef;
+                                border-radius: 12px;
+                                padding: 16px;
+                                margin-bottom: 12px;
+                                box-shadow: 0 2px 4px rgba(0,0,0,0.08);
+                                transition: transform 0.2s, box-shadow 0.2s;
+                            ">
+                                <div style="display: flex; justify-content: space-between; align-items: flex-start; margin-bottom: 12px;">
+                                    <div>
+                                        <div style="font-size: 18px; font-weight: 700; color: #667eea; margin-bottom: 4px;">
+                                            #${report.id}
+                                        </div>
+                                        <div style="font-size: 14px; color: #6c757d; margin-bottom: 8px;">
+                                            📍 ${report.damage_type || '미지정'}
+                                        </div>
+                                    </div>
+                                    <div style="
+                                        background: ${statusInfo.color};
+                                        color: white;
+                                        padding: 6px 12px;
+                                        border-radius: 20px;
+                                        font-size: 12px;
+                                        font-weight: 600;
+                                        white-space: nowrap;
+                                    ">
+                                        ${statusInfo.icon} ${statusInfo.label}
+                                    </div>
+                                </div>
+                                
+                                <div style="display: grid; grid-template-columns: 1fr 1fr; gap: 10px; margin-bottom: 12px;">
+                                    <div style="
+                                        background: #f8f9fa;
+                                        padding: 8px 12px;
+                                        border-radius: 8px;
+                                        font-size: 13px;
+                                    ">
+                                        <div style="color: #6c757d; font-size: 11px; margin-bottom: 4px;">긴급도</div>
+                                        <div style="
+                                            color: ${urgencyInfo.color};
+                                            font-weight: 600;
+                                        ">
+                                            🚨 ${urgencyInfo.label}
+                                        </div>
+                                    </div>
+                                    <div style="
+                                        background: #f8f9fa;
+                                        padding: 8px 12px;
+                                        border-radius: 8px;
+                                        font-size: 13px;
+                                    ">
+                                        <div style="color: #6c757d; font-size: 11px; margin-bottom: 4px;">접수일</div>
+                                        <div style="color: #333; font-weight: 500;">
+                                            📅 ${created_at || '정보 없음'}
+                                        </div>
+                                    </div>
+                                </div>
+                                ${report.location ? `
+                                <div style="
+                                    background: #e7f3ff;
+                                    padding: 10px 12px;
+                                    border-radius: 8px;
+                                    margin-bottom: 10px;
+                                    font-size: 13px;
+                                    color: #0066cc;
+                                ">
+                                    📍 <strong>${report.location}</strong>
+                                </div>
+                                ` : ''}
+                                ${report.description_summary ? `
+                                <div style="
+                                    padding: 10px 12px;
+                                    background: #f8f9fa;
+                                    border-radius: 8px;
+                                    font-size: 13px;
+                                    color: #495057;
+                                    line-height: 1.5;
+                                    margin-top: 8px;
+                                ">
+                                    ${report.description_summary}
+                                </div>
+                                ` : ''}
+                                <div style="margin-top: 12px; text-align: center;">
+                                    <button onclick="showReportDetail(${report.id})" style="
+                                        background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+                                        color: white;
+                                        border: none;
+                                        padding: 10px 20px;
+                                        border-radius: 20px;
+                                        font-size: 13px;
+                                        font-weight: 600;
+                                        cursor: pointer;
+                                        transition: all 0.3s ease;
+                                        box-shadow: 0 2px 4px rgba(102, 126, 234, 0.3);
+                                    " onmouseover="this.style.transform='scale(1.05)'; this.style.boxShadow='0 4px 8px rgba(102, 126, 234, 0.4)'" 
+                                       onmouseout="this.style.transform='scale(1)'; this.style.boxShadow='0 2px 4px rgba(102, 126, 234, 0.3)'">
+                                        📋 자세히 보기
+                                    </button>
+                                </div>
+                            </div>
+                        `;
+                    });
+
+                    reportCardsDiv.innerHTML = cardsHtml;
+                } catch (error) {
+                    console.error('신고 카드 렌더링 오류:', error);
+                    reportCardsDiv.innerHTML = '<p style="color: #dc3545;">신고 내역을 표시하는 중 오류가 발생했습니다.</p>';
+                }
             }
 
             async handleImageUpload(event) {
@@ -559,6 +814,10 @@
             handleImageAnalysis(result) {
                 const analysis = result.analysis;
                 const location = result.location;
+                
+                // 업로드된 이미지 파일명 저장
+                this.currentImageFilename = result.filename;
+                console.log('이미지 업로드 성공, 파일명:', this.currentImageFilename);
                 
                 // 이전 설명 입력 필드 초기화
                 const descriptionElement = document.getElementById('reportDescription');
@@ -801,17 +1060,29 @@
                 this.addMessage('<div class="loading"></div> 신고를 접수하고 있습니다...', false);
 
                 try {
+                    // 기존 user_id 사용 (없으면 생성하고 localStorage에 저장)
+                    const userId = this.userId || (() => {
+                        const newUserId = 'user_' + Date.now();
+                        localStorage.setItem('user_id', newUserId);
+                        this.userId = newUserId;
+                        return newUserId;
+                    })();
+                    
+                    const imagePath = this.currentImageFilename ? `uploads/${this.currentImageFilename}` : null;
+                    console.log('신고 생성 요청, image_path:', imagePath);
+                    
                     const response = await fetch('/api/report', {
                         method: 'POST',
                         headers: {
                             'Content-Type': 'application/json',
                         },
                         body: JSON.stringify({
-                            user_id: 'user_' + Date.now(),
+                            user_id: userId,
                             damage_type: this.selectedDamageType,
                             description: description || '이미지 기반 자동 신고',
                             latitude: this.currentLocation?.latitude,
-                            longitude: this.currentLocation?.longitude
+                            longitude: this.currentLocation?.longitude,
+                            image_path: imagePath
                         })
                     });
 
@@ -840,6 +1111,9 @@
                         
                         // 선택된 손상 유형도 초기화
                         this.selectedDamageType = null;
+                        
+                        // ⚠️ 이미지 파일명은 초기화하지 않음 (같은 이미지로 재신고 가능하도록)
+                        // this.currentImageFilename = null;
                         
                         // 주기적으로 상태 확인
                         this.startStatusPolling();
@@ -894,9 +1168,12 @@
                 this.textInput.value = '';
 
                 try {
-                    // 챗봇 API 호출
+                    // 챗봇 API 호출 (user_id 포함)
                     const formData = new FormData();
                     formData.append('query', message);
+                    if (this.userId) {
+                        formData.append('user_id', this.userId);
+                    }
 
                     const response = await fetch('/api/chat', {
                         method: 'POST',
@@ -925,6 +1202,213 @@
             const modal = document.getElementById('mapModal');
             modal.classList.add('hidden');
             modal.style.display = 'none';
+        }
+
+        function closeReportDetailModal() {
+            const modal = document.getElementById('reportDetailModal');
+            modal.classList.add('hidden');
+            modal.style.display = 'none';
+        }
+
+        async function showReportDetail(reportId) {
+            const modal = document.getElementById('reportDetailModal');
+            const content = document.getElementById('reportDetailContent');
+            
+            // 모달 열기
+            modal.classList.remove('hidden');
+            modal.style.display = 'flex';
+            
+            // 로딩 표시
+            content.innerHTML = `
+                <div style="text-align: center; padding: 40px;">
+                    <div class="loading"></div>
+                    <p style="margin-top: 20px; color: #6c757d;">신고 정보를 불러오는 중...</p>
+                </div>
+            `;
+            
+            try {
+                const response = await fetch(`/api/report/${reportId}/detail`);
+                if (!response.ok) {
+                    throw new Error('신고 정보를 불러올 수 없습니다.');
+                }
+                
+                const report = await response.json();
+                
+                console.log('신고 상세 정보:', report);
+                console.log('이미지 경로:', report.image_path);
+                
+                // 상태 및 긴급도 정보
+                const statusMap = {
+                    "접수": { label: "접수완료", color: "#17a2b8", icon: "📋" },
+                    "검토중": { label: "검토중", color: "#ffc107", icon: "🔍" },
+                    "처리중": { label: "처리중", color: "#007bff", icon: "⚙️" },
+                    "완료": { label: "처리완료", color: "#28a745", icon: "✅" }
+                };
+                
+                const urgencyMap = {
+                    1: { label: "낮음", color: "#6c757d" },
+                    2: { label: "보통", color: "#28a745" },
+                    3: { label: "높음", color: "#ffc107" },
+                    4: { label: "매우높음", color: "#fd7e14" },
+                    5: { label: "긴급", color: "#dc3545" }
+                };
+                
+                const statusInfo = statusMap[report.status] || { label: report.status, color: "#6c757d", icon: "📄" };
+                const urgencyInfo = urgencyMap[report.urgency_level] || { label: "알 수 없음", color: "#6c757d" };
+                
+                // 날짜 포맷팅
+                const formatDate = (dateStr) => {
+                    if (!dateStr) return "정보 없음";
+                    try {
+                        const date = new Date(dateStr);
+                        return date.toLocaleString('ko-KR', {
+                            year: 'numeric',
+                            month: 'long',
+                            day: 'numeric',
+                            hour: '2-digit',
+                            minute: '2-digit'
+                        });
+                    } catch {
+                        return dateStr;
+                    }
+                };
+                
+                // 상세 정보 HTML 생성
+                // 이미지 섹션 생성 (있으면 표시, 없으면 "이미지 없음" 메시지)
+                let imageSection = '';
+                if (report.image_path && report.image_path.trim() !== '') {
+                    // 경로 정규화: uploads/filename 또는 /uploads/filename 형식 처리
+                    let imageUrl = report.image_path;
+                    if (!imageUrl.startsWith('/')) {
+                        imageUrl = `/${imageUrl}`;
+                    }
+                    // 이미 uploads/로 시작하면 그대로, 아니면 uploads/ 추가
+                    if (!imageUrl.startsWith('/uploads/')) {
+                        imageUrl = imageUrl.replace(/^\/?uploads/, '/uploads');
+                    }
+                    
+                    console.log('이미지 URL:', imageUrl);
+                    
+                    imageSection = `
+                        <div style="margin-bottom: 15px; border-bottom: 2px solid #e9ecef; padding-bottom: 12px;">
+                            <div style="color: #333; font-size: 12px; font-weight: 700; margin-bottom: 8px; display: flex; align-items: center; gap: 6px;">
+                                <span style="font-size: 14px;">📸</span>
+                                <span>신고 이미지</span>
+                            </div>
+                            <div style="text-align: center; background: #f8f9fa; padding: 10px; border-radius: 8px; border: 1px solid #e9ecef;">
+                                <img src="${imageUrl}" alt="신고 이미지" 
+                                     style="max-width: 100%; max-height: 250px; border-radius: 6px; box-shadow: 0 2px 6px rgba(0,0,0,0.1); object-fit: contain; display: block; margin: 0 auto;" 
+                                     onerror="console.error('이미지 로드 실패:', this.src); this.style.display='none'; this.parentElement.innerHTML='<div style=\\'padding: 20px; text-align: center;\\'><p style=\\'color: #dc3545; font-size: 12px; margin: 0;\\'>❌ 이미지를 불러올 수 없습니다</p><p style=\\'color: #6c757d; font-size: 10px; margin-top: 6px;\\'>경로: ${imageUrl}</p></div>'"
+                                     onload="console.log('✅ 이미지 로드 성공:', this.src)"/>
+                            </div>
+                        </div>
+                    `;
+                } else {
+                    console.log('⚠️ 이미지 경로가 없습니다. report.image_path:', report.image_path);
+                    imageSection = `
+                        <div style="margin-bottom: 20px; border-bottom: 2px solid #e9ecef; padding-bottom: 15px;">
+                            <div style="color: #333; font-size: 13px; font-weight: 700; margin-bottom: 10px; display: flex; align-items: center; gap: 6px;">
+                                <span style="font-size: 16px;">📸</span>
+                                <span>신고 이미지</span>
+                            </div>
+                            <div style="text-align: center; background: #f8f9fa; padding: 30px 15px; border-radius: 10px; border: 1px dashed #dee2e6;">
+                                <p style="color: #6c757d; font-size: 13px; margin: 0;">이미지가 없습니다</p>
+                                <p style="color: #adb5bd; font-size: 11px; margin-top: 6px;">이 신고는 이미지 없이 생성되었습니다.</p>
+                            </div>
+                        </div>
+                    `;
+                }
+                
+                let html = `
+                    <div style="background: linear-gradient(135deg, #667eea 0%, #764ba2 100%); padding: 12px; border-radius: 10px; margin-bottom: 12px;">
+                        <div style="display: flex; justify-content: space-between; align-items: center;">
+                            <h2 style="color: white; margin: 0; font-size: 16px;">신고번호 #${report.report_id}</h2>
+                            <div style="background: rgba(255,255,255,0.3); color: white; padding: 4px 10px; border-radius: 20px; font-size: 11px; font-weight: 600;">
+                                ${statusInfo.icon} ${statusInfo.label}
+                            </div>
+                        </div>
+                    </div>
+                    
+                    ${imageSection}
+                    
+                    <div style="display: grid; grid-template-columns: 1fr 1fr; gap: 8px; margin-bottom: 12px;">
+                        <div style="background: #f8f9fa; padding: 10px; border-radius: 8px;">
+                            <div style="color: #6c757d; font-size: 10px; margin-bottom: 4px;">손상 유형</div>
+                            <div style="font-size: 13px; font-weight: 600; color: #333;">📍 ${report.damage_type || '미지정'}</div>
+                        </div>
+                        <div style="background: #f8f9fa; padding: 10px; border-radius: 8px;">
+                            <div style="color: #6c757d; font-size: 10px; margin-bottom: 4px;">긴급도</div>
+                            <div style="font-size: 13px; font-weight: 600; color: ${urgencyInfo.color};">🚨 ${urgencyInfo.label}</div>
+                        </div>
+                    </div>
+                    
+                    ${report.location ? `
+                    <div style="background: #e7f3ff; padding: 10px; border-radius: 8px; margin-bottom: 12px;">
+                        <div style="color: #6c757d; font-size: 10px; margin-bottom: 4px;">위치</div>
+                        <div style="font-size: 12px; font-weight: 600; color: #0066cc;">📍 ${report.location}</div>
+                        ${report.latitude && report.longitude ? `
+                        <div style="font-size: 10px; color: #0066cc; margin-top: 4px;">
+                            좌표: ${report.latitude.toFixed(6)}, ${report.longitude.toFixed(6)}
+                        </div>
+                        ` : ''}
+                    </div>
+                    ` : ''}
+                    
+                    <div style="background: white; border: 1px solid #e9ecef; border-radius: 8px; padding: 10px; margin-bottom: 12px;">
+                        <div style="color: #6c757d; font-size: 10px; margin-bottom: 6px;">상세 설명</div>
+                        <div style="font-size: 12px; color: #495057; line-height: 1.4; white-space: pre-wrap; word-wrap: break-word;">
+                            ${report.description || report.description_summary || '설명 없음'}
+                        </div>
+                        ${report.description_summary && report.description !== report.description_summary ? `
+                        <div style="margin-top: 8px; padding-top: 8px; border-top: 1px solid #e9ecef;">
+                            <div style="color: #6c757d; font-size: 9px; margin-bottom: 4px;">요약</div>
+                            <div style="font-size: 11px; color: #6c757d; line-height: 1.3;">${report.description_summary}</div>
+                        </div>
+                        ` : ''}
+                    </div>
+                    
+                    <div style="display: grid; grid-template-columns: 1fr 1fr; gap: 8px; margin-bottom: 12px;">
+                        <div style="background: #f8f9fa; padding: 10px; border-radius: 8px;">
+                            <div style="color: #6c757d; font-size: 10px; margin-bottom: 4px;">접수일시</div>
+                            <div style="font-size: 11px; font-weight: 500; color: #333;">📅 ${formatDate(report.created_at)}</div>
+                        </div>
+                        <div style="background: #f8f9fa; padding: 10px; border-radius: 8px;">
+                            <div style="color: #6c757d; font-size: 10px; margin-bottom: 4px;">최종 업데이트</div>
+                            <div style="font-size: 11px; font-weight: 500; color: #333;">🕒 ${formatDate(report.updated_at)}</div>
+                        </div>
+                    </div>
+                    
+                    <div style="background: #f0f8ff; padding: 10px; border-radius: 8px; border-left: 4px solid #007bff; margin-bottom: 10px;">
+                        <div style="color: #6c757d; font-size: 10px; margin-bottom: 5px;">담당 부서</div>
+                        <div style="font-size: 13px; font-weight: 600; color: #007bff; margin-bottom: 4px;">
+                            🏢 ${report.department}
+                        </div>
+                        <div style="font-size: 11px; color: #495057;">
+                            📞 ${report.contact || '연락처 정보 없음'}
+                        </div>
+                    </div>
+                `;
+                
+                content.innerHTML = html;
+                
+            } catch (error) {
+                console.error('신고 상세 조회 오류:', error);
+                content.innerHTML = `
+                    <div style="text-align: center; padding: 40px;">
+                        <div style="color: #dc3545; font-size: 48px; margin-bottom: 16px;">❌</div>
+                        <p style="color: #dc3545; font-size: 16px; margin-bottom: 20px;">신고 정보를 불러올 수 없습니다.</p>
+                        <button onclick="closeReportDetailModal()" style="
+                            background: #6c757d;
+                            color: white;
+                            border: none;
+                            padding: 10px 20px;
+                            border-radius: 8px;
+                            cursor: pointer;
+                            font-size: 14px;
+                        ">닫기</button>
+                    </div>
+                `;
+            }
         }
 
         async function confirmLocation() {

@@ -67,12 +67,15 @@ async def create_report(request: ReportRequest):
         
         dept_info = get_department(damage_type)
         
-        # 위치 정보와 함께 삽입 (description_summary 필드 추가)
+        # 위치 정보와 함께 삽입 (description_summary, image_path 필드 추가)
+        image_path = request.image_path or None
+        logger.info(f"신고 접수: user_id={request.user_id}, image_path={image_path}")
+        
         cursor.execute('''
-        INSERT INTO reports (user_id, damage_type, description, description_summary, urgency_level, status, latitude, longitude)
-        VALUES (?, ?, ?, ?, ?, ?, ?, ?)
+        INSERT INTO reports (user_id, damage_type, description, description_summary, urgency_level, status, latitude, longitude, image_path)
+        VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?)
         ''', (request.user_id, damage_type, description, description_summary, urgency_level, '접수', 
-              request.latitude, request.longitude))
+              request.latitude, request.longitude, image_path))
         
         report_id = cursor.lastrowid
         
@@ -849,13 +852,14 @@ async def get_map():
 
 # ===== 챗봇 엔드포인트 =====
 @router.post("/api/chat")
-async def chat_endpoint(query: str = Form(...)):
-    """챗봇 채팅 엔드포인트"""
+async def chat_endpoint(query: str = Form(...), user_id: str = Form(None)):
+    """챗봇 채팅 엔드포인트 (user_id로 신고 내역 조회 가능)"""
     if not is_chat_enabled():
         return JSONResponse({"response": "⚠️ 챗봇 기능이 현재 비활성화되어 있습니다."})
     
     try:
-        answer = process_query(query)
+        # user_id가 없으면 None으로 처리 (신고 내역 조회 불가)
+        answer = process_query(query, user_id=user_id)
         return JSONResponse({"response": answer})
     except Exception as e:
         logger.error(f"챗봇 오류: {e}")

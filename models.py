@@ -10,6 +10,7 @@ class ReportRequest(BaseModel):
     damage_type: Optional[str] = None
     latitude: Optional[float] = None
     longitude: Optional[float] = None
+    image_path: Optional[str] = None
 
 
 class ReportResponse(BaseModel):

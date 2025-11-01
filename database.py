@@ -209,6 +209,41 @@ def get_all_reports(limit: int = 50, offset: int = 0, status: str = None):
     }
 
 
+def get_reports_by_user_id(user_id: str, limit: int = 50):
+    """user_id로 신고 내역 조회"""
+    conn = sqlite3.connect('reports.db')
+    cursor = conn.cursor()
+    
+    cursor.execute('''
+        SELECT id, damage_type, urgency_level, status, created_at, updated_at, 
+               latitude, longitude, location, description, description_summary
+        FROM reports 
+        WHERE user_id = ?
+        ORDER BY created_at DESC
+        LIMIT ?
+    ''', (user_id, limit))
+    
+    reports = cursor.fetchall()
+    conn.close()
+    
+    return [
+        {
+            "id": report[0],
+            "damage_type": report[1],
+            "urgency_level": report[2],
+            "status": report[3],
+            "created_at": report[4],
+            "updated_at": report[5],
+            "latitude": report[6],
+            "longitude": report[7],
+            "location": report[8],
+            "description": report[9],
+            "description_summary": report[10]
+        }
+        for report in reports
+    ]
+
+
 def get_statistics():
     """신고 통계 조회"""
     conn = sqlite3.connect('reports.db')

@@ -28,6 +28,7 @@ app.add_middleware(
 
 # 정적 파일 서빙
 app.mount("/static", StaticFiles(directory="static"), name="static")
+app.mount("/uploads", StaticFiles(directory="uploads"), name="uploads")
 
 # API 라우터 등록
 app.include_router(router)
