@@ -191,17 +191,31 @@ def process_query(query: str, user_id: Optional[str] = None) -> Optional[str]:
         user_reports_data = None
         is_report_query_flag = user_id and _is_report_query(query)
         
+        # 신고 내역 조회는 LLM 없이 직접 처리 (더 빠르고 효율적)
         if is_report_query_flag:
             try:
                 from database import get_reports_by_user_id
                 reports = get_reports_by_user_id(user_id, limit=10)
                 user_reports_data = reports  # JSON 데이터로 저장
-                user_reports_text = _format_user_reports_for_llm(reports)
-                logger.info(f"사용자 {user_id}의 신고 내역 조회: {len(reports)}건")
+                logger.info(f"사용자 {user_id}의 신고 내역 조회: {len(reports)}건 (LLM 호출 생략)")
+                
+                # JSON 데이터를 HTML로 직접 반환 (LLM 호출 없음)
+                import json
+                reports_json = json.dumps(user_reports_data, ensure_ascii=False, default=str)
+                # HTML 이스케이프 처리
+                reports_json_escaped = reports_json.replace('&', '&amp;').replace('<', '&lt;').replace('>', '&gt;').replace('"', '&quot;').replace("'", '&#39;')
+                answer = f"<div data-report-cards='{reports_json_escaped}'></div>"
+                
+                # 대화 기록에 저장
+                if memory:
+                    memory.save_context({"input": query}, {"output": answer})
+                
+                return answer
             except Exception as e:
                 logger.error(f"신고 내역 조회 오류: {e}")
-                user_reports_text = "신고 내역을 불러오는 중 오류가 발생했습니다."
+                return "⚠️ 신고 내역을 불러오는 중 오류가 발생했습니다."
         
+        # 일반 질문은 RAG + LLM 처리
         # 관련 문서 검색
         if retriever:
             docs = retriever.invoke(query)
@@ -217,10 +231,6 @@ def process_query(query: str, user_id: Optional[str] = None) -> Optional[str]:
                  for msg in memory.chat_memory.messages]
             )
         
-        # 신고 내역 정보 추가
-        if is_report_query_flag and user_reports_text:
-            context = f"{user_reports_text}\n\n{context}"
-        
         full_context = f"{conversation_history}\n\n{context}"
         prompt = build_prompt(full_context, query)
         
@@ -235,16 +245,6 @@ def process_query(query: str, user_id: Optional[str] = None) -> Optional[str]:
                   .replace("? ", "?<br>")
                   .replace("\n", "<br>")
         )
-        
-        # 신고 내역 조회 질문이면 특별한 마커와 함께 데이터 전달 (LLM 응답 텍스트는 제외)
-        if is_report_query_flag and user_reports_data:
-            # 특별한 마커를 포함한 응답 (프론트엔드에서 파싱하여 카드 렌더링)
-            import json
-            reports_json = json.dumps(user_reports_data, ensure_ascii=False, default=str)
-            # HTML 이스케이프 처리
-            reports_json_escaped = reports_json.replace('&', '&amp;').replace('<', '&lt;').replace('>', '&gt;').replace('"', '&quot;').replace("'", '&#39;')
-            # 카드만 반환하고 LLM 응답 텍스트는 포함하지 않음
-            answer = f"<div data-report-cards='{reports_json_escaped}'></div>"
         
         # 대화 기록에 저장
         if memory:
