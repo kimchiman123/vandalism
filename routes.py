@@ -15,7 +15,7 @@ from database import (
     get_all_reports, get_statistics, auto_update_status
 )
 from ai import analyze_image
-from utils import extract_location, calculate_urgency, estimate_processing_time, check_emergency_notification, summarize_text_with_textrank
+from utils import extract_location, calculate_urgency, estimate_processing_time, check_emergency_notification, summarize_text_with_textrank, adjust_urgency_by_population
 from test_data import create_test_report_data
 from cluster import (
     update_map_realtime, perform_dbscan_clustering, 
@@ -53,6 +53,14 @@ async def create_report(request: ReportRequest):
         damage_type = request.damage_type or "기타"
         description = request.description or ""
         urgency_level = calculate_urgency(damage_type, description)
+        
+        # 유동인구 가중치를 적용하여 긴급도 재조정
+        if request.latitude and request.longitude:
+            urgency_level = adjust_urgency_by_population(
+                latitude=request.latitude,
+                longitude=request.longitude,
+                initial_urgency=urgency_level
+            )
         
         # TextRank 알고리즘을 사용하여 설명 요약 생성
         description_summary = ""

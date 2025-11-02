@@ -11,6 +11,7 @@ import sqlite3
 import requests
 import logging
 from scipy.spatial.distance import cdist
+import json
 warnings.filterwarnings('ignore')
 
 # 로깅 설정
@@ -519,6 +520,54 @@ def create_risk_visualization_map(reports_df, cluster_summary_df, output_file=No
                 popup=f"군집 영향 범위: 약 {influence_radius:.0f}m"
             ).add_to(m)
     
+    # 파주시 행정구역 경계 추가
+    try:
+        with open('data/paju_submunicipalities.geojson', 'r', encoding='utf-8') as f:
+            paju_geojson = json.load(f)
+        
+        # 스타일 함수 정의
+        style_function = lambda x: {
+            'fillColor': '#3388ff', 
+            'color': '#3388ff', 
+            'weight': 1.5, 
+            'fillOpacity': 0.1
+        }
+        
+        # 하이라이트 스타일 함수 정의
+        highlight_function = lambda x: {
+            'fillColor': '#0055ff', 
+            'color': '#0055ff', 
+            'weight': 3, 
+            'fillOpacity': 0.5
+        }
+
+        # GeoJson 레이어 생성 및 추가
+        geojson_layer = folium.GeoJson(
+            paju_geojson,
+            name='파주시 행정구역',
+            style_function=style_function,
+            highlight_function=highlight_function,
+            tooltip=folium.features.GeoJsonTooltip(
+                fields=['name'],
+                aliases=['지역명:'],
+                localize=True,
+                sticky=False,
+                style="""
+                    background-color: #F0EFEF;
+                    border: 2px solid black;
+                    border-radius: 3px;
+                    box-shadow: 3px;
+                """
+            )
+        ).add_to(m)
+        
+        logger.info("✅ 파주시 행정구역 GeoJSON 레이어 추가 완료")
+
+    except FileNotFoundError:
+        logger.warning("⚠️ 파주시 행정구역 GeoJSON 파일('data/paju_submunicipalities.geojson')을 찾을 수 없습니다.")
+    except Exception as e:
+        logger.error(f"❌ 파주시 행정구역 GeoJSON 처리 중 오류 발생: {e}")
+
     # 범례 추가
     legend_html = '''
     <div style="position: fixed; 
@@ -539,6 +588,9 @@ def create_risk_visualization_map(reports_df, cluster_summary_df, output_file=No
     </div>
     '''
     m.get_root().html.add_child(folium.Element(legend_html))
+    
+    # 레이어 컨트롤 추가
+    folium.LayerControl().add_to(m)
     
     # 지도 저장
     return m
