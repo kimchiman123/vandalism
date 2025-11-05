@@ -377,12 +377,12 @@ def create_risk_visualization_map(reports_df, cluster_summary_df, output_file=No
     )
     
     risk_colors = {
-        1: '#90EE90',  # 연두색
-        2: '#FFFF99',  # 노란색
-        3: '#FFA500',  # 주황색
-        4: '#FF6347',  # 토마토색
-        5: '#DC143C',  # 빨간색
-        '단독': '#808080'  # 회색
+        1: 'lightgreen',  # 연두색
+        2: 'green',  # 노란색
+        3: 'orange',  # 주황색
+        4: 'red',  # 토마토색
+        5: 'darkred',  # 빨간색
+        '단독': 'gray'  # 회색
     }
     
     risk_icons = {
@@ -401,7 +401,7 @@ def create_risk_visualization_map(reports_df, cluster_summary_df, output_file=No
             icon = risk_icons['단독']
             risk_display = f"단독 (긴급도 {report['emergency_level']})"
         else:
-            color = risk_colors.get(report['risk_level'], '#808080')
+            color = risk_colors.get(report['risk_level'], 'gray')
             icon = risk_icons.get(report['risk_level'], 'info-sign')
             risk_display = f"Level {report['risk_level']} ({report['risk_label']})"
         
@@ -441,8 +441,7 @@ def create_risk_visualization_map(reports_df, cluster_summary_df, output_file=No
         folium.Marker(
             location=[report['latitude'], report['longitude']],
             popup=folium.Popup(popup_html, max_width=320),
-            icon=folium.Icon(color='red' if report.get('risk_level', 1) >= 4 else 'blue', 
-                           icon=icon)
+            icon=folium.Icon(color=color, icon=icon)
         ).add_to(m)
     
     # 군집 중심 마커 - 크기와 위험도에 맞게 표시
@@ -500,9 +499,9 @@ def create_risk_visualization_map(reports_df, cluster_summary_df, output_file=No
                 location=[cluster['center_lat'], cluster['center_lon']],
                 radius=base_radius,
                 popup=folium.Popup(cluster_popup, max_width=360),
-                color=color,
+                color=risk_colors.get(cluster['risk_level'], 'gray'),
                 fill=True,
-                fillColor=color,
+                fillColor=risk_colors.get(cluster['risk_level'], 'gray'),
                 fillOpacity=0.6,
                 weight=2
             ).add_to(m)
@@ -575,12 +574,12 @@ def create_risk_visualization_map(reports_df, cluster_summary_df, output_file=No
                 background-color: white; border:2px solid grey; z-index:9999; 
                 font-size:14px; padding: 10px">
     <p style="margin-bottom: 10px; font-weight: bold;">위험도 범례</p>
-    <p><span style="color: #DC143C;">⬤</span> Level 5 - 긴급</p>
-    <p><span style="color: #FF6347;">⬤</span> Level 4 - 경고</p>
-    <p><span style="color: #FFA500;">⬤</span> Level 3 - 주의</p>
-    <p><span style="color: #FFFF99;">⬤</span> Level 2 - 보통</p>
-    <p><span style="color: #90EE90;">⬤</span> Level 1 - 낮음</p>
-    <p><span style="color: #808080;">⬤</span> 단독 신고</p>
+    <p><span style="color: darkred;">⬤</span> Level 5 - 긴급</p>
+    <p><span style="color: red;">⬤</span> Level 4 - 경고</p>
+    <p><span style="color: orange;">⬤</span> Level 3 - 주의</p>
+    <p><span style="color: green;">⬤</span> Level 2 - 보통</p>
+    <p><span style="color: lightgreen;">⬤</span> Level 1 - 낮음</p>
+    <p><span style="color: gray;">⬤</span> 단독 신고</p>
     <hr style="margin: 5px 0;">
     <p><b>총 신고:</b> ''' + str(len(reports_df)) + '''건</p>
     <p><b>군집:</b> ''' + str(len(cluster_summary_df)) + '''개</p>

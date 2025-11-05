@@ -52,7 +52,7 @@ async def create_report(request: ReportRequest):
         
         damage_type = request.damage_type or "기타"
         description = request.description or ""
-        urgency_level = calculate_urgency(damage_type, description)
+        urgency_level = calculate_urgency(damage_type, description, latitude=request.latitude, longitude=request.longitude)
         
         # 유동인구 가중치를 적용하여 긴급도 재조정
         if request.latitude and request.longitude:

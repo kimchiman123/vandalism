@@ -166,10 +166,10 @@ def extract_location(image_bytes: bytes) -> dict:
         }
 
 
-def calculate_urgency(damage_type: str, description: str = "", image_analysis: dict = None) -> int:
+def calculate_urgency(damage_type: str, description: str = "", image_analysis: dict = None, latitude: float = None, longitude: float = None) -> int:
     """Calculate urgency level (1-5, 5 is most urgent)"""
     from advanced_features import emergency_analyzer
-    return emergency_analyzer.analyze_emergency_level(damage_type, description, image_analysis)
+    return emergency_analyzer.analyze_emergency_level(damage_type, description, image_analysis, latitude, longitude)
 
 
 def estimate_processing_time(damage_type: str, urgency_level: int, cluster_info: list = None) -> str:

@@ -8,11 +8,12 @@ from datetime import datetime, timedelta
 import numpy as np
 from sklearn.cluster import DBSCAN
 from sklearn.metrics.pairwise import haversine_distances
+from intersection_data_loader import load_intersection_data
 
 class EmergencyAnalyzer:
     """긴급도 분석 클래스"""
     
-    def __init__(self):
+    def __init__(self, intersection_radius_m=100):
         self.emergency_keywords = {
             '매우긴급': 5,
             '긴급': 4,
@@ -36,8 +37,27 @@ class EmergencyAnalyzer:
             '안전펜스': {'기본': 2, '완전파손': 3, '교통사고위험': 4},
             '불법주정차': {'기본': 1, '응급차량통과방해': 4, '교통마비': 3}
         }
-    
-    def analyze_emergency_level(self, damage_type: str, description: str = "", image_analysis: dict = None) -> int:
+        self.intersection_radius_m = intersection_radius_m
+        self.intersection_data = load_intersection_data()
+
+    def _get_intersection_weight(self, report_lat: float, report_lon: float) -> float:
+        """교차로 근접성 및 교통량에 따른 가중치 계산"""
+        if not self.intersection_data or report_lat is None or report_lon is None:
+            return 0.0
+
+        max_weight = 0.0
+        report_coords = np.radians([[report_lat, report_lon]])
+
+        for intersection in self.intersection_data:
+            intersection_coords = np.radians([[intersection['latitude'], intersection['longitude']]])
+            distance = haversine_distances(report_coords, intersection_coords)[0][0] * 6371000  # 미터 단위
+
+            if distance <= self.intersection_radius_m:
+                max_weight = max(max_weight, intersection['traffic_weight'])
+        
+        return max_weight
+
+    def analyze_emergency_level(self, damage_type: str, description: str = "", image_analysis: dict = None, latitude: float = None, longitude: float = None) -> int:
         """긴급도 분석"""
         base_urgency = 1
         
@@ -60,8 +80,12 @@ class EmergencyAnalyzer:
                 if obj['label'].lower() in ['person', 'car', 'truck']:
                     image_urgency = max(image_urgency, 3)  # 사람이나 차량이 있으면 긴급도 상승
         
+        # 교차로 가중치 반영
+        intersection_weight = self._get_intersection_weight(latitude, longitude)
+        intersection_urgency = math.ceil(intersection_weight * 2) # 0~1 사이의 가중치를 0, 1, 2점으로 변환
+
         # 최종 긴급도 계산
-        final_urgency = max(base_urgency, max_keyword_urgency, image_urgency)
+        final_urgency = max(base_urgency, max_keyword_urgency, image_urgency) + intersection_urgency
         
         return min(final_urgency, 5)  # 최대 5
 
