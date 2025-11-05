@@ -6,6 +6,7 @@ from geocoding import reverse_geocode
 import json
 from datetime import datetime
 import os
+import pandas as pd
 
 # cluster.py에서 행정동 매칭 함수 가져오기
 # 순환 참조를 피하기 위해 함수 내에서 import 할 수도 있지만, 구조상 utils는 cluster보다 하위 레벨이므로 직접 import
@@ -15,13 +16,11 @@ except ImportError:
     # 만약 다른 환경에서 utils만 단독으로 쓰일 경우를 대비
     assign_reports_to_admin_districts = None
 
-
 logger = logging.getLogger(__name__)
-
 
 def adjust_urgency_by_population(latitude: float, longitude: float, initial_urgency: int) -> int:
     """
-    유동인구 가중치를 적용하여 긴급도를 재계산합니다.
+    생활인구 가중치를 적용하여 긴급도를 재계산합니다.
 
     Args:
         latitude (float): 신고 위도
@@ -31,44 +30,20 @@ def adjust_urgency_by_population(latitude: float, longitude: float, initial_urge
     Returns:
         int: 조정된 긴급도 (최대 5)
     """
-    weights_path = 'data/population_weights.json'
-    if not os.path.exists(weights_path):
-        logger.warning(f"Population weights file not found at {weights_path}. Skipping adjustment.")
+    path = 'data/population_weights.json'
+    if not os.path.exists(path):
+        logger.warning(f"Population weights file not found at {path}. Skipping adjustment.")
         return initial_urgency
 
     try:
-        with open(weights_path, 'r', encoding='utf-8') as f:
-            weights = json.load(f)
+        with open(path, 'r', encoding='utf-8') as f:
+            json_file = json.load(f)
         
-        day_weights = weights.get('day_weights', {})
-        location_time_weights = weights.get('location_time_weights', {})
+        location_time_weights = json_file.get('location_time_weights', {})
 
-        # 1. 현재 요일과 시간대 파악
+        # 1. 현재 시간대 파악 
         now = datetime.now()
-        current_day = ['월', '화', '수', '목', '금', '토', '일'][now.weekday()]
         current_hour = now.hour
-
-        # 2. 위도/경도를 행정동에 매칭
-        if not assign_reports_to_admin_districts:
-            logger.warning("assign_reports_to_admin_districts function not available. Skipping adjustment.")
-            return initial_urgency
-            
-        # 함수에 맞게 임시 데이터프레임 생성
-        import pandas as pd
-        report_df = pd.DataFrame([{'latitude': latitude, 'longitude': longitude}])
-        matched_df = assign_reports_to_admin_districts(report_df)
-        
-        if matched_df.empty or '행정동명' not in matched_df.columns:
-            logger.warning("Could not match coordinates to an administrative district. Skipping adjustment.")
-            return initial_urgency
-            
-        admin_district = matched_df.at[0, '행정동명']
-
-        # 3. 가중치 조회
-        # 3-1. 요일 가중치
-        day_weight = day_weights.get(current_day, 0)
-
-        # 3-2. 지역-시간 가중치
         time_slot_map = {
             range(0, 6): '00-06시',
             range(6, 9): '06-09시',
@@ -79,26 +54,32 @@ def adjust_urgency_by_population(latitude: float, longitude: float, initial_urge
             range(21, 24): '21-24시'
         }
         current_time_slot = next((slot for r, slot in time_slot_map.items() if current_hour in r), None)
-        
-        location_weight = 0
-        if admin_district in location_time_weights and current_time_slot:
-            location_weight = location_time_weights[admin_district].get(current_time_slot, 0)
 
-        # 4. 최종 가중치 및 긴급도 계산
-        # 두 가중치를 평균내어 최종 인구 가중치 산출
-        population_weight = (day_weight + location_weight) / 2
+        # 2. 위도/경도를 행정동에 매칭
+        if not assign_reports_to_admin_districts:
+            logger.warning("assign_reports_to_admin_districts function not available. Skipping adjustment.")
+            return initial_urgency
+        report_df = pd.DataFrame([{'latitude': latitude, 'longitude': longitude}])
+        matched_df = assign_reports_to_admin_districts(report_df)
         
-        # 가중치 적용 (최대 2점까지 추가, 소수점은 버림)
-        # 예: 인구 가중치가 1.0(최대)이면 2점 추가
-        urgency_adjustment = int(population_weight * 2)
+        if matched_df.empty or '행정동명' not in matched_df.columns:
+            logger.warning("Could not match coordinates to an administrative district. Skipping adjustment.")
+            return initial_urgency
+            
+        admin_district = matched_df.at[0, '행정동명']
+
+        # 3. 지역-시간대 가중치 조회
+        weight = 0
+        if admin_district in location_time_weights and current_time_slot:
+            weight = location_time_weights[admin_district].get(current_time_slot, 0)
         
-        new_urgency = initial_urgency + urgency_adjustment
-        
-        # 최종 긴급도는 5를 넘지 않도록 함
-        final_urgency = min(new_ency, 5)
+        # 최종 긴급도 계산
+        scaled_weight = 1 + 4 * min(weight / 2.5, 1)   # 1~5로 변환
+        final_urgency = 0.7 * initial_urgency + 0.3 * scaled_weight # 가중 평균
+        final_urgency = round(min(final_urgency, 5), 2) # 최댓값 제한 
         
         if final_urgency > initial_urgency:
-            logger.info(f"긴급도 조정: 초기 {initial_urgency} -> 최종 {final_urgency} (인구 가중치: {population_weight:.2f}, 조정값: +{urgency_adjustment})")
+            logger.info(f"긴급도 조정: 초기 {initial_urgency} -> 최종 {final_urgency})")
         
         return final_urgency
 

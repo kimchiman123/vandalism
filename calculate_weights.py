@@ -5,16 +5,38 @@ import os
 
 def create_population_weights():
     """
-    엑셀 파일에서 유동인구 데이터를 읽어 요일별, 지역-시간대별 가중치를 계산하고 JSON 파일로 저장합니다.
+    엑셀 파일에서 유동인구 데이터를 읽어 지역-시간대별 가중치를 계산하고 JSON 파일로 저장합니다.
     """
-    file_path = r'C:\Users\sksg2\vandalism\open\1_생활인구분석_경기데이터드림.xlsx'
-    output_path = r'C:\Users\sksg2\vandalism\data\population_weights.json'
+    file_path = r'C:\Users\baekp\vandalism\open\생활인구분석_경기데이터드림_시간대별분석.xlsx'
+    output_path = r'C:\Users\baekp\vandalism\data\population_weights.json'
 
     if not os.path.exists(file_path):
         print(f"오류: 소스 엑셀 파일을 찾을 수 없습니다 - {file_path}")
         return
 
     try:
+        data = pd.read_excel(file_path)
+
+        data = data.melt(
+            id_vars=["행정동명"],            
+            var_name="time",              
+            value_name="mean_population"    
+        )
+        data = data.rename(columns={"행정동명":"region"})
+        total_population = data['mean_population'].sum()
+        data['weight'] = data['mean_population'] / total_population * 100
+
+        location_time_weights = (
+            data.pivot(index="region", columns="time", values="weight")
+            .to_dict(orient="index")
+        )
+
+        final_weights = {"location_time_weights": location_time_weights}
+
+        with open(output_path, "w", encoding="utf-8") as f:
+            json.dump(final_weights, f, ensure_ascii=False, indent=4)
+
+        """
         # 1. 요일별 데이터 처리
         df_day = pd.read_excel(file_path, sheet_name='29p 요일별 생활인구')
         # 생활인구 컬럼을 min-max scaling을 통해 0~1 사이 값으로 정규화
@@ -46,7 +68,7 @@ def create_population_weights():
 
         with open(output_path, 'w', encoding='utf-8') as f:
             json.dump(final_weights, f, ensure_ascii=False, indent=4)
-        
+        """
         print(f"성공: 가중치 데이터가 {output_path} 에 저장되었습니다.")
 
     except Exception as e:
