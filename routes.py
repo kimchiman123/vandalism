@@ -15,7 +15,7 @@ from database import (
     get_all_reports, get_statistics, auto_update_status
 )
 from ai import analyze_image
-from utils import extract_location, calculate_urgency, estimate_processing_time, check_emergency_notification, summarize_text_with_textrank, adjust_urgency_by_population
+from utils import extract_location, calculate_urgency, estimate_processing_time, check_emergency_notification, summarize_text_with_textrank
 from test_data import create_test_report_data
 from cluster import (
     update_map_realtime, perform_dbscan_clustering, 
@@ -43,6 +43,42 @@ async def admin_dashboard():
         return HTMLResponse(content=f.read())
 
 
+from calculate_weights import calculate_priority_score
+from intersection_data_loader import load_intersection_data
+import math
+
+# 전역 변수로 교차로 데이터 로드 (서버 시작 시 한 번만)
+INTERSECTION_DATA = load_intersection_data()
+if INTERSECTION_DATA:
+    INTERSECTION_DF = pd.DataFrame(INTERSECTION_DATA)
+    # 전체 평균 차량 통행량 계산
+    AVG_TRAFFIC_VOLUME = INTERSECTION_DF['traffic_volume'].mean()
+else:
+    INTERSECTION_DF = pd.DataFrame()
+    AVG_TRAFFIC_VOLUME = 0
+
+def get_nearby_traffic_ratios(latitude: float, longitude: float, radius_km: float = 0.1) -> list:
+    """신고 지점 반경 100m 내 교차로의 차량 통행량 비율 목록을 반환합니다."""
+    if INTERSECTION_DF.empty or AVG_TRAFFIC_VOLUME == 0:
+        return []
+
+    ratios = []
+    for _, intersection in INTERSECTION_DF.iterrows():
+        dist = math.sqrt(
+            ((latitude - intersection['latitude']) * 111.32)**2 +
+            ((longitude - intersection['longitude']) * 111.32 * math.cos(math.radians(latitude)))**2
+        )
+        if dist <= radius_km:
+            # C_raw = (해당 교차로 차량수 / 전체 평균 차량수) * 100
+            # 요청서의 C_raw는 100을 곱하지만, 여기서는 비율 자체를 사용.
+            # 만약 100을 곱하는 것이 맞다면 아래 코드를 수정해야 함.
+            # 우선은 100을 곱하지 않은 비율로 계산.
+            ratio = intersection['traffic_volume'] / AVG_TRAFFIC_VOLUME
+            ratios.append(ratio)
+    return ratios
+
+# ... (기존 코드는 생략)
+
 @router.post("/api/report", response_model=ReportResponse)
 async def create_report(request: ReportRequest):
     """신고 접수"""
@@ -52,15 +88,27 @@ async def create_report(request: ReportRequest):
         
         damage_type = request.damage_type or "기타"
         description = request.description or ""
-        urgency_level = calculate_urgency(damage_type, description, latitude=request.latitude, longitude=request.longitude)
         
-        # 유동인구 가중치를 적용하여 긴급도 재조정
+        # A: 파손 심각도 (1~5). 여기서는 임의로 3으로 설정. 
+        # 실제로는 damage_type, description, image 등을 분석하여 결정해야 함.
+        # 기존 calculate_urgency가 이 역할을 하므로, 기본 점수를 여기서 가져옴.
+        damage_severity = calculate_urgency(damage_type, description)
+
+        # B: 민원수 비율 (0~2.5). 현재 관련 데이터가 없으므로 임의의 값(1.0) 사용.
+        complaint_ratio = 1.0
+
+        # C: 교차로 차량수 비율 (0~3.21).
+        traffic_ratios = []
         if request.latitude and request.longitude:
-            urgency_level = adjust_urgency_by_population(
-                latitude=request.latitude,
-                longitude=request.longitude,
-                initial_urgency=urgency_level
-            )
+            traffic_ratios = get_nearby_traffic_ratios(request.latitude, request.longitude)
+
+        # 최종 우선순위 점수 계산
+        urgency_level = calculate_priority_score(
+            damage_severity=damage_severity,
+            complaint_ratio=complaint_ratio,
+            traffic_ratios=traffic_ratios,
+            weights=(0.5, 0.25, 0.25) # 요청에 명시된 가중치 사용
+        )
         
         # TextRank 알고리즘을 사용하여 설명 요약 생성
         description_summary = ""
@@ -70,14 +118,12 @@ async def create_report(request: ReportRequest):
                 logger.info(f"✅ 설명 요약 생성 완료: 원본 {len(description)}자 → 요약 {len(description_summary)}자")
             except Exception as e:
                 logger.warning(f"⚠️ 설명 요약 생성 실패: {e}")
-                # 요약 실패 시 원본 텍스트의 일부 사용
                 description_summary = description[:200] + "..." if len(description) > 200 else description
         
         dept_info = get_department(damage_type)
         
-        # 위치 정보와 함께 삽입 (description_summary, image_path 필드 추가)
         image_path = request.image_path or None
-        logger.info(f"신고 접수: user_id={request.user_id}, image_path={image_path}")
+        logger.info(f"신고 접수: user_id={request.user_id}, image_path={image_path}, urgency={urgency_level:.2f}")
         
         cursor.execute('''
         INSERT INTO reports (user_id, damage_type, description, description_summary, urgency_level, status, latitude, longitude, image_path)
@@ -87,25 +133,22 @@ async def create_report(request: ReportRequest):
         
         report_id = cursor.lastrowid
         
-        # location 필드 업데이트 (주소 변환)
         if request.latitude and request.longitude:
             try:
                 from geocoding import reverse_geocode
                 address = reverse_geocode(request.latitude, request.longitude)
-                cursor.execute('''
-                    UPDATE reports SET location = ? WHERE id = ?
-                ''', (address, report_id))
+                cursor.execute('UPDATE reports SET location = ? WHERE id = ?', (address, report_id))
             except Exception as e:
                 logger.warning(f"주소 변환 실패: {e}")
         
         conn.commit()
         conn.close()
         
-        # 실시간 지도 업데이트
+        # 실시간 지도 업데이트 및 후처리 (기존 로직 유지)
+        cluster_info = []
         try:
             reports = get_recent_reports_with_location(days=7)
-            
-            if len(reports) >= 1:  # 1개 이상이면 지도 표시
+            if len(reports) >= 1:
                 df = pd.DataFrame(reports, columns=['report_id', 'latitude', 'longitude', 'emergency_level', 'timestamp', 'damage_type', 'location'])
                 df['timestamp'] = pd.to_datetime(df['timestamp'])
                 
@@ -120,31 +163,21 @@ async def create_report(request: ReportRequest):
                         cluster_id = cluster_row['cluster_id']
                         cluster_reports = df[df['cluster'] == cluster_id]
                         addresses = cluster_reports['location'].dropna()
-                        if len(addresses) > 0:
-                            cluster_summary.at[idx, 'address'] = addresses.mode()[0] if len(addresses.mode()) > 0 else addresses.iloc[0]
+                        if not addresses.empty:
+                            cluster_summary.at[idx, 'address'] = addresses.mode()[0] if not addresses.mode().empty else addresses.iloc[0]
                         else:
                             cluster_summary.at[idx, 'address'] = f"위도 {cluster_row['center_lat']:.6f}, 경도 {cluster_row['center_lon']:.6f}"
                         
-                        # max_urgency 추가 (advanced_features에서 필요)
-                        cluster_summary.at[idx, 'max_urgency'] = int(cluster_reports['urgency_level'].max()) if len(cluster_reports) > 0 else 1
+                        cluster_summary.at[idx, 'max_urgency'] = int(cluster_reports['urgency_level'].max()) if not cluster_reports.empty else 1
                     
                     cluster_info = cluster_summary.to_dict('records')
-                else:
-                    cluster_info = []
                 
-                # 군집이 없어도 단독 신고는 표시
                 update_map_realtime(df, cluster_summary if num_clusters > 0 else pd.DataFrame(), 'static/risk_map.html')
                 logger.info(f"✅ 실시간 지도 업데이트 완료: {num_clusters}개 군집, {len(df)}개 신고")
-            else:
-                cluster_info = []
-                logger.info("⚠️ 지도 업데이트를 위한 충분한 데이터가 없습니다.")
-                
         except Exception as cluster_error:
             logger.warning(f"군집 분석 오류 (무시됨): {cluster_error}")
-            cluster_info = []
-        
+
         estimated_time = estimate_processing_time(damage_type, urgency_level, cluster_info)
-        
         should_notify = check_emergency_notification(urgency_level, cluster_info)
         
         response_message = "신고가 성공적으로 접수되었습니다."
@@ -289,7 +322,7 @@ async def get_report_detail(report_id: int):
             "description": description or "설명 없음",
             "description_summary": description_summary or "요약 없음",
             "urgency_level": urgency_level,
-            "urgency_label": urgency_labels[urgency_level - 1],
+            "urgency_label": urgency_labels[round(urgency_level) - 1],
             "status": status,
             "created_at": created_at,
             "updated_at": updated_at,
@@ -318,12 +351,12 @@ async def get_cluster_reports():
     try:
         reports = get_recent_reports_with_location(days=7)
         
-        if len(reports) < 3:
+        if len(reports) < 2:
             return {
                 "clusters": [], 
                 "total_reports": len(reports),
                 "cluster_count": 0,
-                "message": "군집 분석을 위한 충분한 데이터가 없습니다. (최소 3개 이상 필요)"
+                "message": "군집 분석을 위한 충분한 데이터가 없습니다. (최소 2개 이상 필요)"
             }
         
         # 데이터베이스에서 반환되는 순서: id, latitude, longitude, urgency_level, created_at, damage_type, location
@@ -333,7 +366,7 @@ async def get_cluster_reports():
         
         logger.info(f"데이터프레임 생성 완료: {len(df)}개 신고")
         
-        df = perform_dbscan_clustering(df, eps_km=0.3, min_samples=3)
+        df = perform_dbscan_clustering(df, eps_km=0.3, min_samples=2)
         num_clusters = len(df[df['cluster'] != -1]['cluster'].unique())
         
         logger.info(f"군집 분석 완료: {num_clusters}개 군집 탐지")

@@ -19,7 +19,7 @@ class ReportResponse(BaseModel):
     status: str
     message: str
     damage_type: str
-    urgency_level: int
+    urgency_level: float
     department: str
     estimated_time: str
 

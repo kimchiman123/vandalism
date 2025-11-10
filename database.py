@@ -255,12 +255,13 @@ def get_statistics():
     
     # Urgency level distribution
     cursor.execute('''
-        SELECT urgency_level, COUNT(*) 
+        SELECT ROUND(urgency_level), COUNT(*) 
         FROM reports 
-        GROUP BY urgency_level 
-        ORDER BY urgency_level
+        GROUP BY ROUND(urgency_level) 
+        ORDER BY ROUND(urgency_level)
     ''')
-    urgency_stats = dict(cursor.fetchall())
+    urgency_stats_raw = dict(cursor.fetchall())
+    urgency_stats = {int(k): v for k, v in urgency_stats_raw.items() if k is not None}
     
     # Damage type distribution
     cursor.execute('''

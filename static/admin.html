@@ -808,7 +808,8 @@
                 tableHtml += '</tr></thead><tbody>';
                 
                 reports.forEach(report => {
-                    const urgencyText = ['낮음', '보통', '높음', '매우높음', '긴급'][report.urgency_level - 1];
+                    const roundedUrgency = Math.round(report.urgency_level);
+                    const urgencyText = ['낮음', '보통', '높음', '매우높음', '긴급'][roundedUrgency - 1];
                     const statusDisplay = {
                         '접수': '접수완료',
                         '검토중': '검토중',
@@ -819,7 +820,7 @@
                     tableHtml += '<tr>';
                     tableHtml += `<td>#${report.id}</td>`;
                     tableHtml += `<td>${report.damage_type}</td>`;
-                    tableHtml += `<td><span class="urgency-badge urgency-${report.urgency_level}">${urgencyText}</span></td>`;
+                    tableHtml += `<td><span class="urgency-badge urgency-${roundedUrgency}">${urgencyText} (${report.urgency_level.toFixed(2)})</span></td>`;
                     tableHtml += `<td><span class="status-badge status-${report.status.toLowerCase()}">${statusDisplay}</span></td>`;
                     tableHtml += `<td>${new Date(report.created_at).toLocaleString()}</td>`;
                     tableHtml += `<td><button class="btn btn-primary" onclick="showReportDetail(${report.id})">상세보기</button></td>`;
@@ -900,7 +901,7 @@
                     const location = cluster.address || `위도 ${cluster.center_lat.toFixed(6)}, 경도 ${cluster.center_lon.toFixed(6)}`;
                     clusterHtml += `<p><strong>위치:</strong> ${location}</p>`;
                     clusterHtml += `<p><strong>평균 긴급도:</strong> ${cluster.avg_emergency}</p>`;
-                    clusterHtml += `<p><strong>최고 긴급도:</strong> <span class="urgency-badge urgency-${cluster.max_emergency}">${['낮음', '보통', '높음', '매우높음', '긴급'][cluster.max_emergency - 1]}</span></p>`;
+                    clusterHtml += `<p><strong>최고 긴급도:</strong> <span class="urgency-badge urgency-${Math.round(cluster.max_emergency)}">${['낮음', '보통', '높음', '매우높음', '긴급'][Math.round(cluster.max_emergency) - 1]}</span></p>`;
                     clusterHtml += `<p><strong>위험도 점수:</strong> ${cluster.risk_score} (${cluster.risk_label})</p>`;
                     
                     // 위험도 근거 표시
@@ -923,13 +924,14 @@
                         clusterHtml += '<strong>📋 포함된 신고:</strong>';
                         clusterHtml += '<div style="margin-top: 8px;">';
                         cluster.reports.forEach((report, idx) => {
-                            const urgencyLabel = ['낮음', '보통', '높음', '매우높음', '긴급'][report.urgency_level - 1];
+                            const roundedUrgency = Math.round(report.urgency_level);
+                            const urgencyLabel = ['낮음', '보통', '높음', '매우높음', '긴급'][roundedUrgency - 1];
                             const createdDate = new Date(report.created_at).toLocaleString('ko-KR');
                             const descriptionDisplay = report.description_summary || report.description || '설명 없음';
                             clusterHtml += `<div style="margin-bottom: 10px; padding: 8px; background: white; border-left: 3px solid #2196f3; border-radius: 3px;">`;
                             clusterHtml += `<div style="font-weight: 600; margin-bottom: 5px;">신고 #${report.report_id} - ${report.damage_type || '기타'}</div>`;
                             clusterHtml += `<div style="font-size: 12px; color: #666; margin-bottom: 5px;">`;
-                            clusterHtml += `긴급도: <span class="urgency-badge urgency-${report.urgency_level}">${urgencyLabel}</span> | `;
+                            clusterHtml += `긴급도: <span class="urgency-badge urgency-${roundedUrgency}">${urgencyLabel} (${report.urgency_level.toFixed(2)})</span> | `;
                             clusterHtml += `상태: ${report.status} | `;
                             clusterHtml += `작성일: ${createdDate}`;
                             clusterHtml += `</div>`;
@@ -1093,7 +1095,7 @@
             html += '<h3>기본 정보</h3>';
             html += '<div class="detail-row"><div class="detail-label">신고 번호:</div><div class="detail-value">#' + report.report_id + '</div></div>';
             html += '<div class="detail-row"><div class="detail-label">손상 유형:</div><div class="detail-value">' + report.damage_type + '</div></div>';
-            html += '<div class="detail-row"><div class="detail-label">긴급도:</div><div class="detail-value"><span class="urgency-badge urgency-' + report.urgency_level + '">' + report.urgency_label + '</span></div></div>';
+            html += '<div class="detail-row"><div class="detail-label">긴급도:</div><div class="detail-value"><span class="urgency-badge urgency-' + Math.round(report.urgency_level) + '">' + report.urgency_label + ` (${report.urgency_level.toFixed(2)})` + '</span></div></div>';
             html += '<div class="detail-row"><div class="detail-label">상태:</div><div class="detail-value"><span class="status-badge status-' + report.status.toLowerCase() + '">' + report.status + '</span></div></div>';
             html += '<div class="detail-row"><div class="detail-label">신고자:</div><div class="detail-value">' + (report.user_id || '익명') + '</div></div>';
             html += '</div>';

@@ -122,6 +122,6 @@ def create_test_report_data():
         "location": address,
         "damage_type": damage_type,
         "description": description,
-        "urgency_level": random.randint(1, 5)
+        "urgency_level": round(random.uniform(1.0, 5.0), 2)
     }
 
