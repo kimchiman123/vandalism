@@ -9,6 +9,7 @@ from database import init_db
 from ai import init_yolo_model
 from routes import router
 from chat_service import initialize_chat
+from geocoding import load_boundaries
 
 # 로깅 설정
 logging.basicConfig(level=logging.INFO)
@@ -34,6 +35,9 @@ app.mount("/uploads", StaticFiles(directory="uploads"), name="uploads")
 app.include_router(router)
 
 
+from geocoding import load_boundaries
+
+
 @app.on_event("startup")
 async def startup_event():
     """서버 시작 시 초기화 작업 실행"""
@@ -48,6 +52,11 @@ async def startup_event():
         logger.info("✅ 챗봇 초기화 완료")
     else:
         logger.info("⚠️  챗봇 기능이 비활성화되어 있습니다 (API 키 확인 필요)")
+
+    # 지리 정보 데이터 로드
+    load_boundaries()
+    logger.info("✅ 지리 정보 데이터 로드 완료")
+
 
 
 if __name__ == "__main__":

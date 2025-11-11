@@ -8,8 +8,8 @@ class ReportRequest(BaseModel):
     user_id: str
     description: Optional[str] = None
     damage_type: Optional[str] = None
-    latitude: Optional[float] = None
-    longitude: Optional[float] = None
+    latitude: float
+    longitude: float
     image_path: Optional[str] = None
 
 

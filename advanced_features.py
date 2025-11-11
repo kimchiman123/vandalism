@@ -73,19 +73,19 @@ class EmergencyAnalyzer:
             if keyword in text:
                 max_keyword_urgency = max(max_keyword_urgency, urgency)
         
-        # 이미지 분석 결과 반영
-        image_urgency = 0
-        if image_analysis and 'detected_objects' in image_analysis:
-            for obj in image_analysis['detected_objects']:
-                if obj['label'].lower() in ['person', 'car', 'truck']:
-                    image_urgency = max(image_urgency, 3)  # 사람이나 차량이 있으면 긴급도 상승
+        # 이미지 분석 결과 반영 (삭제됨)
+        # image_urgency = 0
+        # if image_analysis and 'detected_objects' in image_analysis:
+        #     for obj in image_analysis['detected_objects']:
+        #         if obj['label'].lower() in ['person', 'car', 'truck']:
+        #             image_urgency = max(image_urgency, 3)  # 사람이나 차량이 있으면 긴급도 상승
         
         # 교차로 가중치 반영
         intersection_weight = self._get_intersection_weight(latitude, longitude)
         intersection_urgency = math.ceil(intersection_weight * 2) # 0~1 사이의 가중치를 0, 1, 2점으로 변환
 
         # 최종 긴급도 계산
-        final_urgency = max(base_urgency, max_keyword_urgency, image_urgency) + intersection_urgency
+        final_urgency = max(base_urgency, max_keyword_urgency) + intersection_urgency
         
         return min(final_urgency, 5)  # 최대 5
 

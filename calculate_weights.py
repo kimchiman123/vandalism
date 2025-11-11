@@ -2,17 +2,21 @@ import pandas as pd
 import json
 import os
 import numpy as np
+import logging
 
-def calculate_priority_score(damage_severity, complaint_ratio, traffic_ratios, 
-                             weights=(0.4, 0.3, 0.3)):
+# 로거 설정
+logger = logging.getLogger(__name__)
+
+def calculate_priority_score(damage_severity, population_weight, traffic_ratios, 
+                             weights=(0.5, 0.25, 0.25)):
     """
     공공시설 파손 우선순위 점수 계산
     
     Parameters:
     - damage_severity (float): 파손 심각도 점수 (1~5)
-    - complaint_ratio (float): 시간/행정동 별 민원수 비율 (raw 값, 0~)
+    - population_weight (float): 지역/시간별 인구 가중치 (raw 값, 0~)
     - traffic_ratios (list): 100m 내 교차로 차량수 비율 리스트 (raw 값, 0~)
-    - weights (tuple): (w1, w2, w3) 가중치
+    - weights (tuple): (w1, w2, w3) 가중치 (파손 심각도, 인구 가중치, 교통량)
     
     Returns:
     - float: 최종 우선순위 점수 (1~5 범위)
@@ -21,27 +25,37 @@ def calculate_priority_score(damage_severity, complaint_ratio, traffic_ratios,
     # A: 파손 상태 점수 (그대로 사용)
     A = damage_severity
     
-    # B: 민원수 비율 스케일링
-    # B_raw가 2.5일 때 B_capped는 2.5가 되고, B_scaled는 1 + 4 * min(1, 1) = 5가 됩니다.
-    # B_raw가 0일 때 B_capped는 0이 되고, B_scaled는 1 + 4 * min(0, 1) = 1이 됩니다.
-    B_capped = min(complaint_ratio, 2.5)
-    B_scaled = 1 + 4 * (B_capped / 2.5) # min(B_capped / 2.5, 1)와 동일한 효과
+    # B: 인구 가중치 스케일링 (cluster.py의 calculate_dynamic_eps와 유사한 동적 스케일링)
+    # 로그 스케일을 사용하여 낮은 가중치 구간의 변화를 증폭하고, 높은 가중치 구간의 변화를 완화
+    min_weight = 0.0  # 최소 가중치
+    max_weight = 2.5  # 최대 가중치 (데이터 분포상 가장 높은 운정3동의 최대값을 기준으로 설정)
+
+    # 로그 스케일 정규화 (0에 가까운 값의 극단적 변화를 막기 위해 0.001을 더함)
+    log_pop = np.log(population_weight + 0.001)
+    log_min = np.log(min_weight + 0.001)
+    log_max = np.log(max_weight + 0.001)
+
+    normalized_pop = (log_pop - log_min) / (log_max - log_min)
+    normalized_pop = np.clip(normalized_pop, 0, 1)  # 0~1 사이로 클리핑
+
+    # 1~5 범위로 스케일링
+    B_scaled = 1 + 4 * normalized_pop
     
     # C: 교차로 차량수 비율 스케일링
     if traffic_ratios and len(traffic_ratios) > 0:
         # 100m 내 교차로들의 평균 사용
         C_raw = np.mean(traffic_ratios)
         C_capped = min(C_raw, 3.21)
-        # C_raw가 3.21일 때 C_capped는 3.21이 되고, C_scaled는 1 + 4 * min(1, 1) = 5가 됩니다.
-        # C_raw가 0일 때 C_capped는 0이 되고, C_scaled는 1 + 4 * min(0, 1) = 1이 됩니다.
-        C_scaled = 1 + 4 * (C_capped / 3.21) # min(C_capped / 3.21, 1)와 동일한 효과
+        C_scaled = 1 + 4 * (C_capped / 3.21)
     else:
         # 교차로 데이터 없으면 기본값 1 (최소 위험도)
         C_scaled = 1.0
     
+    # 개별 스케일링된 긴급도 로깅
+    logger.info(f"Scaled urgency components: Damage(A)={A:.2f}, Population(B)={B_scaled:.2f}, Traffic(C)={C_scaled:.2f}")
+
     # 최종 가중 평균 계산
     w1, w2, w3 = weights
-    # 가중치의 합이 1이므로 sum(weights)로 나눌 필요가 없습니다.
     final_score = (w1 * A + w2 * B_scaled + w3 * C_scaled)
     
     # 최종 점수가 1~5 범위를 벗어나지 않도록 보정

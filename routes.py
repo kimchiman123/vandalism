@@ -8,7 +8,7 @@ import pandas as pd
 from datetime import datetime, timedelta
 import logging
 from typing import List
-
+from geocoding import get_admin_district_from_coords
 from models import ReportRequest, ReportResponse, ReportStatus, StatusUpdate
 from database import (
     get_department, get_recent_reports_with_location, 
@@ -45,7 +45,9 @@ async def admin_dashboard():
 
 from calculate_weights import calculate_priority_score
 from intersection_data_loader import load_intersection_data
+from geocoding import get_admin_district_from_coords
 import math
+import json
 
 # 전역 변수로 교차로 데이터 로드 (서버 시작 시 한 번만)
 INTERSECTION_DATA = load_intersection_data()
@@ -57,24 +59,116 @@ else:
     INTERSECTION_DF = pd.DataFrame()
     AVG_TRAFFIC_VOLUME = 0
 
-def get_nearby_traffic_ratios(latitude: float, longitude: float, radius_km: float = 0.1) -> list:
-    """신고 지점 반경 100m 내 교차로의 차량 통행량 비율 목록을 반환합니다."""
+# 전역 변수로 인구 가중치 데이터 로드
+POPULATION_WEIGHTS = {}
+try:
+    with open('data/population_weights.json', 'r', encoding='utf-8') as f:
+        POPULATION_WEIGHTS = json.load(f)
+    logger.info("✅ Population weights loaded successfully!")
+except FileNotFoundError:
+    logger.error("❌ Population weights file not found. Population-based urgency will not be applied.")
+except json.JSONDecodeError:
+    logger.error("❌ Failed to decode population weights file.")
+
+
+def get_population_weight(latitude: float, longitude: float, timestamp: datetime) -> float:
+    """신고 지점의 지역과 시간에 맞는 인구 가중치를 반환합니다."""
+    logger.info(f"get_population_weight called: lat={latitude}, lon={longitude}, time={timestamp}")
+    if not POPULATION_WEIGHTS or not latitude or not longitude:
+        return 0.0
+
+    try:
+        region = get_admin_district_from_coords(latitude, longitude)
+        logger.info(f"Reverse geocoded address: {region}")
+        if not region:
+            return 0.0
+        
+        logger.info(f"Extracted region: {region}")
+        if not region:
+            return 0.0
+
+        # 시간 키 생성 (예: '09시' -> '09-12시' 범위에 매핑)
+        hour = timestamp.hour
+        if 0 <= hour < 6:
+            time_key = "00-06시"
+        elif 6 <= hour < 9:
+            time_key = "06-09시"
+        elif 9 <= hour < 12:
+            time_key = "09-12시"
+        elif 12 <= hour < 15:
+            time_key = "12-15시"
+        elif 15 <= hour < 18:
+            time_key = "15-18시"
+        elif 18 <= hour < 21:
+            time_key = "18-21시"
+        else: # 21 <= hour < 24
+            time_key = "21-24시"
+        
+        logger.info(f"Time key: {time_key}")
+
+        # 가중치 조회
+        weight = POPULATION_WEIGHTS.get("location_time_weights", {}).get(region, {}).get(time_key, 0.0)
+        logger.info(f"Found weight: {weight}")
+        if weight == 0.0:
+            logger.warning(f"No population weight found for region: '{region}' at time: '{time_key}'. Returning 0.0.")
+        
+        return weight
+
+    except Exception as e:
+        logger.warning(f"⚠️ Failed to get population weight: {e}")
+        return 0.0
+
+
+def get_nearby_traffic_ratios(latitude: float, longitude: float, radius_km: float = 0.2) -> list:
+    """신고 지점 반경 내 교차로의 차량 통행량 비율 목록을 반환합니다."""
+    logger.info(f"📍 신고 지점: ({latitude:.6f}, {longitude:.6f})")
+    logger.info(f"🚗 검색 반경: {radius_km}km")
+
     if INTERSECTION_DF.empty or AVG_TRAFFIC_VOLUME == 0:
+        logger.error("❌ INTERSECTION_DF가 비어있거나 AVG_TRAFFIC_VOLUME이 0입니다!")
         return []
 
+    logger.info(f"🔍 전체 교차로 수: {len(INTERSECTION_DF)}개")
+    
     ratios = []
+    found_count = 0
     for _, intersection in INTERSECTION_DF.iterrows():
+        # Haversine formula for distance calculation
         dist = math.sqrt(
             ((latitude - intersection['latitude']) * 111.32)**2 +
             ((longitude - intersection['longitude']) * 111.32 * math.cos(math.radians(latitude)))**2
         )
+        
+        # 약간 더 넓은 범위의 교차로에 대한 디버그 로그
+        if dist <= radius_km * 1.5:
+            logger.debug(f"교차로 {intersection.get('name', 'N/A')}: 거리={dist:.4f}km")
+
         if dist <= radius_km:
-            # C_raw = (해당 교차로 차량수 / 전체 평균 차량수) * 100
-            # 요청서의 C_raw는 100을 곱하지만, 여기서는 비율 자체를 사용.
-            # 만약 100을 곱하는 것이 맞다면 아래 코드를 수정해야 함.
-            # 우선은 100을 곱하지 않은 비율로 계산.
             ratio = intersection['traffic_volume'] / AVG_TRAFFIC_VOLUME
             ratios.append(ratio)
+            found_count += 1
+    
+    logger.info(f"✅ 반경 {radius_km}km 내 교차로: {found_count}개")
+
+    # 대체 전략: 반경 내 교차로가 없으면 가장 가까운 교차로 1개 사용
+    if not ratios:
+        min_dist = float('inf')
+        nearest_ratio = None
+        
+        for _, intersection in INTERSECTION_DF.iterrows():
+            dist = math.sqrt(
+                ((latitude - intersection['latitude']) * 111.32)**2 +
+                ((longitude - intersection['longitude']) * 111.32 * math.cos(math.radians(latitude)))**2
+            )
+            if dist < min_dist:
+                min_dist = dist
+                nearest_ratio = intersection['traffic_volume'] / AVG_TRAFFIC_VOLUME
+        
+        # 1km 이내에 가장 가까운 교차로가 있는 경우에만 사용
+        if nearest_ratio is not None and min_dist <= 1.0:
+            logger.info(f"⚠️ 반경 내 교차로 없음. 가장 가까운 교차로 사용 (거리: {min_dist:.2f}km)")
+            ratios.append(nearest_ratio)
+            
     return ratios
 
 # ... (기존 코드는 생략)
@@ -89,25 +183,31 @@ async def create_report(request: ReportRequest):
         damage_type = request.damage_type or "기타"
         description = request.description or ""
         
-        # A: 파손 심각도 (1~5). 여기서는 임의로 3으로 설정. 
-        # 실제로는 damage_type, description, image 등을 분석하여 결정해야 함.
-        # 기존 calculate_urgency가 이 역할을 하므로, 기본 점수를 여기서 가져옴.
+        # A: 파손 심각도
         damage_severity = calculate_urgency(damage_type, description)
 
-        # B: 민원수 비율 (0~2.5). 현재 관련 데이터가 없으므로 임의의 값(1.0) 사용.
-        complaint_ratio = 1.0
+        # B: 인구 가중치
+        population_weight = 0.0
+        if request.latitude and request.longitude:
+            population_weight = get_population_weight(request.latitude, request.longitude, datetime.now())
 
-        # C: 교차로 차량수 비율 (0~3.21).
+        # C: 교차로 차량수 비율
         traffic_ratios = []
         if request.latitude and request.longitude:
             traffic_ratios = get_nearby_traffic_ratios(request.latitude, request.longitude)
 
+        # 최종 우선순위 점수 계산 전 입력값 로깅
+        logger.info(f"Calculating urgency with inputs: "
+                    f"damage_severity={damage_severity:.2f}, "
+                    f"population_weight={population_weight:.4f}, "
+                    f"traffic_ratios={traffic_ratios}")
+
         # 최종 우선순위 점수 계산
         urgency_level = calculate_priority_score(
             damage_severity=damage_severity,
-            complaint_ratio=complaint_ratio,
+            population_weight=population_weight,
             traffic_ratios=traffic_ratios,
-            weights=(0.5, 0.25, 0.25) # 요청에 명시된 가중치 사용
+            weights=(0.5, 0.25, 0.25) # (파손 심각도, 인구 가중치, 교통량)
         )
         
         # TextRank 알고리즘을 사용하여 설명 요약 생성
@@ -132,14 +232,6 @@ async def create_report(request: ReportRequest):
               request.latitude, request.longitude, image_path))
         
         report_id = cursor.lastrowid
-        
-        if request.latitude and request.longitude:
-            try:
-                from geocoding import reverse_geocode
-                address = reverse_geocode(request.latitude, request.longitude)
-                cursor.execute('UPDATE reports SET location = ? WHERE id = ?', (address, report_id))
-            except Exception as e:
-                logger.warning(f"주소 변환 실패: {e}")
         
         conn.commit()
         conn.close()

@@ -18,7 +18,7 @@ warnings.filterwarnings('ignore')
 logger = logging.getLogger(__name__)
 
 # 지오코딩 함수는 geocoding.py 모듈로 이동됨
-from geocoding import geocode_address
+# from geocoding import geocode_address
 
 # ============================================
 # 파주시 행정동 데이터
@@ -643,7 +643,8 @@ def analyze_with_address_input(addresses_list, eps_km=0.5, min_samples=3, output
     reports_data = []
     for i, addr_info in enumerate(addresses_list):
         address = addr_info.get('address', '')
-        coords = geocode_address(address)
+        # coords = geocode_address(address)  # 현재 geocode_address 함수가 없으므로 주석 처리
+        coords = {'latitude': 37.7597, 'longitude': 126.7775} # 임시로 파주시청 좌표 사용
         
         report_data = {
             'report_id': i + 1,

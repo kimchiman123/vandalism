@@ -2,7 +2,7 @@
 import random
 import math
 import logging
-from geocoding import reverse_geocode
+from geocoding import get_admin_district_from_coords
 
 logger = logging.getLogger(__name__)
 
@@ -107,13 +107,18 @@ def create_test_report_data():
     damage_type = generate_random_damage_type()
     description = generate_random_description(damage_type)
     
-    # Try to convert to address (with fast timeout)
+    # 행정동으로 변환 시도
     try:
-        address = reverse_geocode(lat, lon)
-        logger.info(f"Test data address conversion successful: {address}")
+        region_name = get_admin_district_from_coords(lat, lon)
+        if region_name:
+            address = region_name
+            logger.info(f"테스트 데이터 행정동 변환 성공: {address}")
+        else:
+            address = f"경기도 파주시 (좌표: {lat:.6f}, {lon:.6f})"
+            logger.info(f"테스트 데이터 행정동을 찾지 못함. 좌표로 대체: {address}")
     except Exception as e:
-        logger.warning(f"Test data address conversion failed: {e}")
-        address = f"경기도 파주시 (위도: {lat:.6f}, 경도: {lon:.6f})"
+        logger.warning(f"테스트 데이터 행정동 변환 실패: {e}")
+        address = f"경기도 파주시 (좌표: {lat:.6f}, {lon:.6f})"
     
     return {
         "user_id": f"test_user_{random.randint(1000, 9999)}",

@@ -2,11 +2,11 @@
 import logging
 from io import BytesIO
 from PIL import Image
-from geocoding import reverse_geocode
 import json
 from datetime import datetime
 import os
 import pandas as pd
+from geocoding import get_admin_district_from_coords
 
 # cluster.py에서 행정동 매칭 함수 가져오기
 # 순환 참조를 피하기 위해 함수 내에서 import 할 수도 있지만, 구조상 utils는 cluster보다 하위 레벨이므로 직접 import
@@ -119,15 +119,15 @@ def extract_location(image_bytes: bytes) -> dict:
                         else:
                             lon = 0
                             
-                        # 주소로 변환
-                        address = reverse_geocode(lat, lon)
+                        # 주소로 변환 (행정동)
+                        region_name = get_admin_district_from_coords(lat, lon)
                         return {
                             "latitude": lat,
                             "longitude": lon,
-                            "location": address
+                            "location": region_name
                         }
                     except Exception as coord_error:
-                        logger.warning(f"GPS coordinate conversion error (ignored): {coord_error}")
+                        logger.warning(f"행정동 변환 오류 (무시됨): {coord_error}")
         except Exception as exif_error:
             logger.warning(f"EXIF data processing error (ignored): {exif_error}")
         
