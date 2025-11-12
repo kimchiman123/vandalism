@@ -133,34 +133,34 @@ def extract_location(image_bytes: bytes) -> dict:
         
         # GPS 정보가 없으면 기본값 반환
         return {
-            "latitude": 37.5665,  # Seoul City Hall coordinates
-            "longitude": 126.9780,
-            "location": "서울특별시 중구 세종대로 110"
+            "latitude": 37.760028451,  # 파주시청 좌표
+            "longitude": 126.779920083,
+            "location": "경기도 파주시 시청로 50"
         }
         
     except Exception as e:
         logger.error(f"Location extraction error: {e}")
         return {
-            "latitude": 37.5665,
-            "longitude": 126.9780, 
-            "location": "서울특별시 중구 세종대로 110"
+            "latitude": 37.760028451,
+            "longitude": 126.779920083, 
+            "location": "경기도 파주시 시청로 50"
         }
 
 
 def calculate_urgency(damage_type: str, description: str = "", image_analysis: dict = None, latitude: float = None, longitude: float = None) -> int:
-    """Calculate urgency level (1-5, 5 is most urgent)"""
+    """긴급 수준 계산 (1-5, 5가 가장 긴급함)"""""
     from advanced_features import emergency_analyzer
     return emergency_analyzer.analyze_emergency_level(damage_type, description, image_analysis, latitude, longitude)
 
 
 def estimate_processing_time(damage_type: str, urgency_level: int, cluster_info: list = None) -> str:
-    """Estimate processing time for a report"""
+    """보고서 처리 시간 추정"""
     from advanced_features import time_predictor
     return time_predictor.predict_processing_time(damage_type, urgency_level, cluster_info)
 
 
 def check_emergency_notification(urgency_level: int, cluster_info: list = None) -> bool:
-    """Check if emergency notification should be sent"""
+    """긴급 알림"""
     from advanced_features import notification_system
     return notification_system.should_send_emergency_notification(urgency_level, cluster_info)
 
