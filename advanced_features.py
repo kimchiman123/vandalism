@@ -40,23 +40,6 @@ class EmergencyAnalyzer:
         self.intersection_radius_m = intersection_radius_m
         self.intersection_data = load_intersection_data()
 
-    def _get_intersection_weight(self, report_lat: float, report_lon: float) -> float:
-        """교차로 근접성 및 교통량에 따른 가중치 계산"""
-        if not self.intersection_data or report_lat is None or report_lon is None:
-            return 0.0
-
-        max_weight = 0.0
-        report_coords = np.radians([[report_lat, report_lon]])
-
-        for intersection in self.intersection_data:
-            intersection_coords = np.radians([[intersection['latitude'], intersection['longitude']]])
-            distance = haversine_distances(report_coords, intersection_coords)[0][0] * 6371000  # 미터 단위
-
-            if distance <= self.intersection_radius_m:
-                max_weight = max(max_weight, intersection['traffic_weight'])
-        
-        return max_weight
-
     def analyze_emergency_level(self, damage_type: str, description: str = "", image_analysis: dict = None, latitude: float = None, longitude: float = None) -> int:
         """긴급도 분석"""
         base_urgency = 1
@@ -72,20 +55,9 @@ class EmergencyAnalyzer:
         for keyword, urgency in self.emergency_keywords.items():
             if keyword in text:
                 max_keyword_urgency = max(max_keyword_urgency, urgency)
-        
-        # 이미지 분석 결과 반영 (삭제됨)
-        # image_urgency = 0
-        # if image_analysis and 'detected_objects' in image_analysis:
-        #     for obj in image_analysis['detected_objects']:
-        #         if obj['label'].lower() in ['person', 'car', 'truck']:
-        #             image_urgency = max(image_urgency, 3)  # 사람이나 차량이 있으면 긴급도 상승
-        
-        # 교차로 가중치 반영
-        intersection_weight = self._get_intersection_weight(latitude, longitude)
-        intersection_urgency = math.ceil(intersection_weight * 2) # 0~1 사이의 가중치를 0, 1, 2점으로 변환
 
         # 최종 긴급도 계산
-        final_urgency = max(base_urgency, max_keyword_urgency) + intersection_urgency
+        final_urgency = max(base_urgency, max_keyword_urgency) 
         
         return min(final_urgency, 5)  # 최대 5
 

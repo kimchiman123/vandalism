@@ -43,8 +43,9 @@ async def admin_dashboard():
         return HTMLResponse(content=f.read())
 
 
-from calculate_weights import calculate_priority_score
+from utils import calculate_priority_score
 from intersection_data_loader import load_intersection_data
+from population_data_loader import load_population_data
 from geocoding import get_admin_district_from_coords
 import math
 import json
@@ -53,28 +54,18 @@ import json
 INTERSECTION_DATA = load_intersection_data()
 if INTERSECTION_DATA:
     INTERSECTION_DF = pd.DataFrame(INTERSECTION_DATA)
-    # 전체 평균 차량 통행량 계산
-    AVG_TRAFFIC_VOLUME = INTERSECTION_DF['traffic_volume'].mean()
 else:
     INTERSECTION_DF = pd.DataFrame()
-    AVG_TRAFFIC_VOLUME = 0
 
 # 전역 변수로 인구 가중치 데이터 로드
-POPULATION_WEIGHTS = {}
-try:
-    with open('data/population_weights.json', 'r', encoding='utf-8') as f:
-        POPULATION_WEIGHTS = json.load(f)
-    logger.info("✅ Population weights loaded successfully!")
-except FileNotFoundError:
-    logger.error("❌ Population weights file not found. Population-based urgency will not be applied.")
-except json.JSONDecodeError:
-    logger.error("❌ Failed to decode population weights file.")
+POPULATION_DF = load_population_data()
+
 
 
 def get_population_weight(latitude: float, longitude: float, timestamp: datetime) -> float:
     """신고 지점의 지역과 시간에 맞는 인구 가중치를 반환합니다."""
     logger.info(f"get_population_weight called: lat={latitude}, lon={longitude}, time={timestamp}")
-    if not POPULATION_WEIGHTS or not latitude or not longitude:
+    if not POPULATION_DF or not latitude or not longitude:
         return 0.0
 
     try:
@@ -107,7 +98,7 @@ def get_population_weight(latitude: float, longitude: float, timestamp: datetime
         logger.info(f"Time key: {time_key}")
 
         # 가중치 조회
-        weight = POPULATION_WEIGHTS.get("location_time_weights", {}).get(region, {}).get(time_key, 0.0)
+        weight = POPULATION_DF.get(region, {}).get(time_key, 0.0)
         logger.info(f"Found weight: {weight}")
         if weight == 0.0:
             logger.warning(f"No population weight found for region: '{region}' at time: '{time_key}'. Returning 0.0.")
@@ -124,7 +115,7 @@ def get_nearby_traffic_ratios(latitude: float, longitude: float, radius_km: floa
     logger.info(f"📍 신고 지점: ({latitude:.6f}, {longitude:.6f})")
     logger.info(f"🚗 검색 반경: {radius_km}km")
 
-    if INTERSECTION_DF.empty or AVG_TRAFFIC_VOLUME == 0:
+    if INTERSECTION_DF.empty:
         logger.error("❌ INTERSECTION_DF가 비어있거나 AVG_TRAFFIC_VOLUME이 0입니다!")
         return []
 
@@ -144,30 +135,14 @@ def get_nearby_traffic_ratios(latitude: float, longitude: float, radius_km: floa
             logger.debug(f"교차로 {intersection.get('name', 'N/A')}: 거리={dist:.4f}km")
 
         if dist <= radius_km:
-            ratio = intersection['traffic_volume'] / AVG_TRAFFIC_VOLUME
-            ratios.append(ratio)
+            ratios.append(intersection['traffic_volume'])
             found_count += 1
     
     logger.info(f"✅ 반경 {radius_km}km 내 교차로: {found_count}개")
 
-    # 대체 전략: 반경 내 교차로가 없으면 가장 가까운 교차로 1개 사용
     if not ratios:
-        min_dist = float('inf')
-        nearest_ratio = None
-        
-        for _, intersection in INTERSECTION_DF.iterrows():
-            dist = math.sqrt(
-                ((latitude - intersection['latitude']) * 111.32)**2 +
-                ((longitude - intersection['longitude']) * 111.32 * math.cos(math.radians(latitude)))**2
-            )
-            if dist < min_dist:
-                min_dist = dist
-                nearest_ratio = intersection['traffic_volume'] / AVG_TRAFFIC_VOLUME
-        
-        # 1km 이내에 가장 가까운 교차로가 있는 경우에만 사용
-        if nearest_ratio is not None and min_dist <= 1.0:
-            logger.info(f"⚠️ 반경 내 교차로 없음. 가장 가까운 교차로 사용 (거리: {min_dist:.2f}km)")
-            ratios.append(nearest_ratio)
+        logger.warning(f"⚠️ 반경 {radius_km}km 내 교차로가 없습니다. 0 반환.")
+        return [0.0]
             
     return ratios
 

@@ -6,6 +6,7 @@ import json
 from datetime import datetime
 import os
 import pandas as pd
+import numpy as np
 from geocoding import get_admin_district_from_coords
 
 # cluster.py에서 행정동 매칭 함수 가져오기
@@ -18,74 +19,43 @@ except ImportError:
 
 logger = logging.getLogger(__name__)
 
-def adjust_urgency_by_population(latitude: float, longitude: float, initial_urgency: int) -> int:
+
+def calculate_priority_score(damage_severity, population_weight, traffic_ratios, 
+                             weights=(0.5, 0.25, 0.25)):
     """
-    생활인구 가중치를 적용하여 긴급도를 재계산합니다.
-
-    Args:
-        latitude (float): 신고 위도
-        longitude (float): 신고 경도
-        initial_urgency (int): 초기 긴급도 (1-5)
-
+    공공시설 파손 우선순위 점수 계산
+    
+    Parameters:
+    - damage_severity (float): 파손 심각도 점수 (1~5)
+    - population_weight (float): 지역/시간별 인구 가중치 (raw 값, 0~)
+    - traffic_ratios (list): 100m 내 교차로 차량수 비율 리스트 (raw 값, 0~)
+    - weights (tuple): (w1, w2, w3) 가중치 (파손 심각도, 인구 가중치, 교통량)
+    
     Returns:
-        int: 조정된 긴급도 (최대 5)
+    - float: 최종 우선순위 점수 (1~5 범위)
     """
-    path = 'data/population_weights.json'
-    if not os.path.exists(path):
-        logger.warning(f"Population weights file not found at {path}. Skipping adjustment.")
-        return initial_urgency
+    
+    # A: 파손 상태 점수 (그대로 사용)
+    A = damage_severity
+    
+    # B: 인구 가중치 스케일링 1~5 
+    B_scaled = 1 + 4 * population_weight
+    
+    # C: 교차로 차량수 비율 스케일링 1~5
+    if traffic_ratios and len(traffic_ratios) > 0:
+        # 100m 내 교차로들의 평균 사용
+        C_scaled = 1 + 4 * np.mean(traffic_ratios)
+    
+    # 개별 스케일링된 긴급도 로깅
+    logger.info(f"Scaled urgency components: Damage(A)={A:.2f}, Population(B)={B_scaled:.2f}, Traffic(C)={C_scaled:.2f}")
 
-    try:
-        with open(path, 'r', encoding='utf-8') as f:
-            json_file = json.load(f)
-        
-        location_time_weights = json_file.get('location_time_weights', {})
+    # 최종 가중 평균 계산
+    w1, w2, w3 = weights
+    final_score = (w1 * A + w2 * B_scaled + w3 * C_scaled)
+    
+    # 최종 점수가 1~5 범위를 벗어나지 않도록 보정
+    return max(1.0, min(final_score, 5.0))
 
-        # 1. 현재 시간대 파악 
-        now = datetime.now()
-        current_hour = now.hour
-        time_slot_map = {
-            range(0, 6): '00-06시',
-            range(6, 9): '06-09시',
-            range(9, 12): '09-12시',
-            range(12, 15): '12-15시',
-            range(15, 18): '15-18시',
-            range(18, 21): '18-21시',
-            range(21, 24): '21-24시'
-        }
-        current_time_slot = next((slot for r, slot in time_slot_map.items() if current_hour in r), None)
-
-        # 2. 위도/경도를 행정동에 매칭
-        if not assign_reports_to_admin_districts:
-            logger.warning("assign_reports_to_admin_districts function not available. Skipping adjustment.")
-            return initial_urgency
-        report_df = pd.DataFrame([{'latitude': latitude, 'longitude': longitude}])
-        matched_df = assign_reports_to_admin_districts(report_df)
-        
-        if matched_df.empty or '행정동명' not in matched_df.columns:
-            logger.warning("Could not match coordinates to an administrative district. Skipping adjustment.")
-            return initial_urgency
-            
-        admin_district = matched_df.at[0, '행정동명']
-
-        # 3. 지역-시간대 가중치 조회
-        weight = 0
-        if admin_district in location_time_weights and current_time_slot:
-            weight = location_time_weights[admin_district].get(current_time_slot, 0)
-        
-        # 최종 긴급도 계산
-        scaled_weight = 1 + 4 * min(weight / 2.5, 1)   # 1~5로 변환
-        final_urgency = 0.7 * initial_urgency + 0.3 * scaled_weight # 가중 평균
-        final_urgency = round(min(final_urgency, 5), 2) # 최댓값 제한 
-        
-        if final_urgency > initial_urgency:
-            logger.info(f"긴급도 조정: 초기 {initial_urgency} -> 최종 {final_urgency})")
-        
-        return final_urgency
-
-    except Exception as e:
-        logger.error(f"Error adjusting urgency with population weights: {e}")
-        return initial_urgency
 
 
 def extract_location(image_bytes: bytes) -> dict:

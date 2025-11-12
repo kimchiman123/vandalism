@@ -6,11 +6,11 @@ import logging
 logging.basicConfig(level=logging.INFO, format='%(asctime)s - %(levelname)s - %(message)s')
 logger = logging.getLogger(__name__)
 
-INTERSECTION_DATA_PATH = "경기도 파주시_스마트교차로_20250814.csv"
+INTERSECTION_DATA_PATH = "open/경기도 파주시_스마트교차로_20250814.csv"
 
 def load_intersection_data():
     """
-    교차로 데이터를 CSV 파일에서 로드하고, 필요한 컬럼만 선택하여 반환합니다.
+    교차로 데이터를 CSV 파일에서 로드하고, 전처리하여 반환합니다.
     """
     if not os.path.exists(INTERSECTION_DATA_PATH):
         logger.error(f"교차로 CSV 파일을 찾을 수 없습니다: {INTERSECTION_DATA_PATH}")

@@ -7,7 +7,7 @@ import numpy as np
 # 프로젝트 루트 경로를 sys.path에 추가
 sys.path.append(os.path.dirname(os.path.abspath(os.path.dirname(__file__))))
 
-from calculate_weights import calculate_priority_score
+from utils import calculate_priority_score
 
 class TestCalculatePriorityScore(unittest.TestCase):
 
