@@ -48,6 +48,7 @@ def translate_object_label(english_label: str) -> str:
         'lamp': '가로등',
         'street light': '가로등',
         'streetlight': '가로등',
+        'street_light': '가로등',
         
         # Roads
         'road': '도로',
@@ -84,7 +85,14 @@ def translate_object_label(english_label: str) -> str:
         'mouse': '마우스',
         'tv': 'TV',
         'remote': '리모컨',
-        'scissors': '가위'
+        'scissors': '가위',
+        
+        # Damage types
+        'damage_road': '도로 파손',
+        'pothole': '포트홀',
+        'crack': '균열',
+        'graffiti': '낙서',
+        'vandalism': '기물 파손'
     }
     
     return translation_map.get(english_label.lower(), english_label)
@@ -156,8 +164,9 @@ def analyze_image(image_bytes: bytes) -> dict:
         public_objects = [
             'car', 'truck', 'bus', 'motorcycle', 'bicycle', 'person', 
             'traffic light', 'stop sign', 'fire hydrant', 'bench',
-            'pole', 'lamp', 'street light', 'road', 'street', 'highway',
-            'safety_fence', 'barrier', 'guardrail', 'railing', 'sign', 'building'
+            'pole', 'lamp', 'street light', 'street_light', 'road', 'street', 'highway',
+            'safety_fence', 'barrier', 'guardrail', 'railing', 'sign', 'building',
+            'damage_road', 'pothole', 'crack', 'graffiti', 'vandalism'
         ]
         
         # Map objects to damage types
@@ -168,13 +177,14 @@ def analyze_image(image_bytes: bytes) -> dict:
             'motorcycle': '불법주정차',
             'bicycle': '불법주정차',
             'person': '기타',
-            'traffic light': '가로등',
+            'traffic light': '신호등',
             'stop sign': '기타',
             'fire hydrant': '기타',
             'bench': '기타',
             'pole': '가로등',
             'lamp': '가로등',
             'street light': '가로등',
+            'street_light': '가로등',
             'road': '도로',
             'street': '도로',
             'highway': '도로',
@@ -183,7 +193,12 @@ def analyze_image(image_bytes: bytes) -> dict:
             'guardrail': '안전펜스',
             'railing': '안전펜스',
             'sign': '기타',
-            'building': '기타'
+            'building': '기타',
+            'damage_road': '도로 파손',
+            'pothole': '도로 파손',
+            'crack': '도로 파손',
+            'graffiti': '기물 파손',
+            'vandalism': '기물 파손'
         }
         
         # Determine damage type from detected objects
