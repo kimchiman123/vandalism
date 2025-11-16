@@ -58,9 +58,9 @@
 </div>
 
 ### 관리자 대시보드
-<div style="display: flex; flex-wrap: wrap; gap: 10px; margin-bottom: 20px;">
-  <img src="screenshots/admin_dashboard_1.png" width="45%" style="max-width: 400px; height: auto;" alt="관리자 대시보드 1">
-  <img src="screenshots/admin_dashboard_2.png" width="45%" style="max-width: 400px; height: auto;" alt="관리자 대시보드 2">
+<div style="display: flex; flex-wrap: wrap; gap: 15px; margin-bottom: 20px; justify-content: center;">
+  <img src="screenshots/admin_dashboard_1.png" style="max-width: 48%; min-width: 400px; height: auto; border: 1px solid #ddd; border-radius: 8px; box-shadow: 0 2px 8px rgba(0,0,0,0.1);" alt="관리자 대시보드 1">
+  <img src="screenshots/admin_dashboard_2.png" style="max-width: 48%; min-width: 400px; height: auto; border: 1px solid #ddd; border-radius: 8px; box-shadow: 0 2px 8px rgba(0,0,0,0.1);" alt="관리자 대시보드 2">
 </div>
 
 ### 신고 상세보기
